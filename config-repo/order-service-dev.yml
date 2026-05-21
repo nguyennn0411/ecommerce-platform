@@ -1,0 +1,9 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: order-service
+
+ecommerce:
+  service-description: "Creates and processes customer orders using Saga orchestration."

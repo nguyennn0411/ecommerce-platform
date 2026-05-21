@@ -1,0 +1,9 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: inventory-service
+
+ecommerce:
+  service-description: "Tracks stock levels for each product in real time."
