@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ecommerce
       POSTGRES_DB: ecommerce
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ecommerce-postgres-data:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d
