@@ -3,4 +3,5 @@ CREATE DATABASE ecommerce_product_catalog_service;
 CREATE DATABASE ecommerce_inventory_service;
 CREATE DATABASE ecommerce_order_service;
 CREATE DATABASE ecommerce_payment_service;
+CREATE DATABASE ecommerce_payment_db;
 CREATE DATABASE ecommerce_notification_service;
