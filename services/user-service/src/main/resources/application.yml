@@ -26,6 +26,10 @@ eureka:
   client:
     enabled: false
 
+google:
+  client:
+    id: 869521387044-da2mno3083lj4f33t3i3fg8rb2vrs58j.apps.googleusercontent.com
+
 #eureka:
 #  client:
 #    service-url:

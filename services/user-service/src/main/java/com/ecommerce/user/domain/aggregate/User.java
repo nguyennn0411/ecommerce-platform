@@ -28,14 +28,17 @@ public class User {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Builder.Default
     @Column(name = "role", nullable = false, length = 50)
     private String role = "CUSTOMER";
 
+    @Builder.Default
     @Column(name = "status", nullable = false, length = 50)
     private String status = "ACTIVE";
 
-    @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default false")
-    private boolean emailVerified;
+    @Builder.Default
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
