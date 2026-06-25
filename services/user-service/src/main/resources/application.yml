@@ -17,6 +17,11 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: "your-shared-256-bit-secret-key-goes-here"
   config:
     import: optional:configserver:http://localhost:8888
   flyway:
