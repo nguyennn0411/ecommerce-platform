@@ -108,7 +108,6 @@ CREATE TABLE inventory_items (
                                  color VARCHAR(50),
                                  quantity INT NOT NULL DEFAULT 0,
                                  reserved_quantity INT NOT NULL DEFAULT 0,
-                                 warehouse_location VARCHAR(255),
                                  status VARCHAR(50) NOT NULL DEFAULT 'IN_STOCK',
                                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                  updated_at TIMESTAMP

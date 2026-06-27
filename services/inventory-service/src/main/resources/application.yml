@@ -7,11 +7,20 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:postgresql://localhost:5432/ecommerce_inventory_service
+    url: jdbc:postgresql://localhost:5433/ecommerce_inventory_service
     username: ecommerce
     password: ecommerce
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   flyway:
-    enabled: false
+    enabled: true
+    baseline-on-migrate: true
 
 eureka:
   client:
