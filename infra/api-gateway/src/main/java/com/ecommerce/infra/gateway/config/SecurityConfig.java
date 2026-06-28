@@ -5,11 +5,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    private final CustomOauth2SuccessHandler successHandler;
+
+    public SecurityConfig(CustomOauth2SuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
@@ -19,13 +24,8 @@ public class SecurityConfig {
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .authenticationSuccessHandler(customAuthenticationSuccessHandler())
+                        .authenticationSuccessHandler(successHandler)
                 );
         return http.build();
-    }
-
-    @Bean
-    public ServerAuthenticationSuccessHandler customAuthenticationSuccessHandler() {
-        return new CustomOauth2SuccessHandler();
     }
 }
