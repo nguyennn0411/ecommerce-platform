@@ -5,7 +5,7 @@ spring:
   application:
     name: notification-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5432/ecommerce_notification_service}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ecommerce_notification_service}
     username: ${SPRING_DATASOURCE_USERNAME:ecommerce}
     password: ${SPRING_DATASOURCE_PASSWORD:ecommerce}
   jpa:
