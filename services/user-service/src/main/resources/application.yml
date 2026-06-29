@@ -4,24 +4,46 @@ server:
 spring:
   application:
     name: user-service
-  config:
-    import: optional:configserver:http://localhost:8888
   datasource:
     url: jdbc:postgresql://localhost:5432/ecommerce_user_service
-    username: ecommerce
-    password: ecommerce
+    username: postgres
+    password: 123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          secret-key: "your-shared-256-bit-secret-key-goes-here"
+  config:
+    import: optional:configserver:http://localhost:8888
   flyway:
     enabled: false
 
 eureka:
   client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
+    enabled: false
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
+google:
+  client:
+    id: 869521387044-da2mno3083lj4f33t3i3fg8rb2vrs58j.apps.googleusercontent.com
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+#  instance:
+#    prefer-ip-address: true
+#
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,info,metrics,prometheus
