@@ -12,7 +12,7 @@ services:
       - ecommerce-postgres-data:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecommerce -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ecommerce -d ecommerce"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -30,11 +30,11 @@ services:
       - -c
       - |
         set -e
-        for db igit n ecommerce_user_service ecommerce_product_catalog_service ecommerce_inventory_service ecommerce_order_service ecommerce_payment_service ecommerce_payment_db ecommerce_notification_service; do
-          if psql -h postgres -U ecommerce -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$$db'" | grep -q 1; then
+        for db in ecommerce_user_service ecommerce_product_catalog_service ecommerce_inventory_service ecommerce_order_service ecommerce_payment_service ecommerce_payment_db ecommerce_notification_service keycloak; do
+          if psql -h postgres -U ecommerce -d ecommerce -tAc "SELECT 1 FROM pg_database WHERE datname='$$db'" | grep -q 1; then
             echo "Database $$db already exists"
           else
-            psql -h postgres -U ecommerce -d postgres -c "CREATE DATABASE \"$$db\""
+            psql -h postgres -U ecommerce -d ecommerce -c "CREATE DATABASE \"$$db\""
             echo "Created database $$db"
           fi
         done
@@ -86,6 +86,25 @@ services:
     container_name: ecommerce-grafana
     ports:
       - "3000:3000"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: ecommerce-keycloak
+    command: start-dev
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: adminpassword
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: ecommerce
+      KC_DB_PASSWORD: ecommerce
+    ports:
+      - "8180:8080"
 
 volumes:
   ecommerce-postgres-data:
