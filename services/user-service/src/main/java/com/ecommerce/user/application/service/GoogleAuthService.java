@@ -1,9 +1,9 @@
-package com.ecommerce.user.application;
+package com.ecommerce.user.application.service;
 
 import com.ecommerce.user.application.dto.AuthResponse;
 import com.ecommerce.user.application.dto.GoogleLoginRequest;
-import com.ecommerce.user.domain.aggregate.User;
-import com.ecommerce.user.infrastructure.persistence.UserRepository;
+import com.ecommerce.user.domain.model.aggregate.User;
+import com.ecommerce.user.domain.repository.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;

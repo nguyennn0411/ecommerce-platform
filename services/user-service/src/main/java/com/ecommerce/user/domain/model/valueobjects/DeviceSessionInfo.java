@@ -1,4 +1,4 @@
-package com.ecommerce.user.domain.valueobjects;
+package com.ecommerce.user.domain.model.valueobjects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

@@ -1,12 +1,12 @@
 package com.ecommerce.user.api;
 
-import com.ecommerce.user.application.GoogleAuthService;
-import com.ecommerce.user.application.UserService;
+import com.ecommerce.user.application.service.GoogleAuthService;
+import com.ecommerce.user.application.service.UserService;
 import com.ecommerce.user.application.dto.AuthResponse;
 import com.ecommerce.user.application.dto.GoogleLoginRequest;
 import com.ecommerce.user.application.dto.UserInternalDTO;
 import com.ecommerce.user.application.dto.UserSyncRequest;
-import com.ecommerce.user.domain.aggregate.User;
+import com.ecommerce.user.domain.model.aggregate.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

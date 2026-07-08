@@ -5,9 +5,9 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/ecommerce_user_service
-    username: postgres
-    password: 123
+    url: jdbc:postgresql://localhost:5433/ecommerce
+    username: ecommerce
+    password: ecommerce
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -27,23 +27,19 @@ spring:
   flyway:
     enabled: false
 
-eureka:
-  client:
-    enabled: false
-
 google:
   client:
     id: 869521387044-da2mno3083lj4f33t3i3fg8rb2vrs58j.apps.googleusercontent.com
 
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka/
-#  instance:
-#    prefer-ip-address: true
-#
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,info,metrics,prometheus
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus

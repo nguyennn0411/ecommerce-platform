@@ -1,6 +1,6 @@
-package com.ecommerce.user.domain.entities;
+package com.ecommerce.user.domain.model.entities;
 
-import com.ecommerce.user.domain.aggregate.User;
+import com.ecommerce.user.domain.model.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

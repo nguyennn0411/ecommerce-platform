@@ -1,7 +1,7 @@
-package com.ecommerce.user.application;
+package com.ecommerce.user.application.service;
 
-import com.ecommerce.user.domain.aggregate.User;
-import com.ecommerce.user.infrastructure.persistence.UserRepository;
+import com.ecommerce.user.domain.model.aggregate.User;
+import com.ecommerce.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

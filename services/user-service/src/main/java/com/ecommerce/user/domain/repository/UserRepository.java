@@ -1,6 +1,6 @@
-package com.ecommerce.user.infrastructure.persistence;
+package com.ecommerce.user.domain.repository;
 
-import com.ecommerce.user.domain.aggregate.User;
+import com.ecommerce.user.domain.model.aggregate.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

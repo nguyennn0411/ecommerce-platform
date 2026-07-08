@@ -1,7 +1,6 @@
-package com.ecommerce.user.domain.entities;
+package com.ecommerce.user.domain.model.entities;
 
-import com.ecommerce.user.domain.aggregate.User;
-import com.ecommerce.user.domain.valueobjects.HashedPassword;
+import com.ecommerce.user.domain.model.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,13 +9,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_credentials")
+@Table(name = "user_profiles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserCredential {
+public class UserProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,11 +25,14 @@ public class UserCredential {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Embedded
-    private HashedPassword password;
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
-    @Column(name = "password_updated_at")
-    private LocalDateTime passwordUpdatedAt;
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
