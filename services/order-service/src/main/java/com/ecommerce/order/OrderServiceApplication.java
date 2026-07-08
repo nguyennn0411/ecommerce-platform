@@ -1,11 +1,13 @@
 package com.ecommerce.order;
 
+import com.ecommerce.order.config.PaymentServiceProperties;
+import com.ecommerce.order.config.InventoryServiceProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@EnableFeignClients
 @SpringBootApplication(scanBasePackages = "com.ecommerce")
+@EnableConfigurationProperties({PaymentServiceProperties.class, InventoryServiceProperties.class})
 public class OrderServiceApplication {
 
     public static void main(String[] args) {

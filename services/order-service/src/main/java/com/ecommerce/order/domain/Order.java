@@ -7,10 +7,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,135 +24,197 @@ public class Order {
     @Id
     private UUID id;
 
-    @Column(name = "order_code", nullable = false, unique = true, length = 50)
-    private String orderCode;
-
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "total_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "buyer_name", nullable = false)
+    private String buyerName;
+
+    @Column(name = "buyer_email", nullable = false)
+    private String buyerEmail;
+
+    @Column
+    private String description;
 
     @Column(nullable = false, length = 10)
-    private String currency = "VND";
+    private String currency;
+
+    @Column(name = "total_amount", nullable = false, precision = 19, scale = 2)
+    private BigDecimal totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
-    private OrderStatus status = OrderStatus.PENDING;
-
-    @Column(name = "shipping_address", nullable = false, columnDefinition = "TEXT")
-    private String shippingAddress;
+    private OrderStatus status;
 
     @Column(name = "payment_id")
     private UUID paymentId;
 
-    @Column(columnDefinition = "TEXT")
-    private String note;
+    @Column(name = "payment_order_code")
+    private Long paymentOrderCode;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "payment_link_id")
+    private String paymentLinkId;
+
+    @Column(name = "checkout_url")
+    private String checkoutUrl;
+
+    @Column(name = "qr_code")
+    private String qrCode;
+
+    @Column(name = "failure_reason")
+    private String failureReason;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
+
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt ASC")
-    private List<OrderItem> items = new ArrayList<>();
+    private final List<OrderItem> items = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("createdAt ASC")
-    private List<SagaTransaction> sagaTransactions = new ArrayList<>();
+    protected Order() {
+    }
+
+    public Order(UUID userId,
+                 String buyerName,
+                 String buyerEmail,
+                 String description,
+                 String currency,
+                 List<OrderItem> items) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
+        this.id = UUID.randomUUID();
+        this.userId = userId;
+        this.buyerName = buyerName;
+        this.buyerEmail = buyerEmail;
+        this.description = description;
+        this.currency = currency;
+        this.status = OrderStatus.CREATED;
+        this.totalAmount = items.stream()
+                .map(OrderItem::getLineTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        items.forEach(this::addItem);
+    }
+
+    private void addItem(OrderItem item) {
+        item.attachTo(this);
+        this.items.add(item);
+    }
+
+    public void markPaymentPending(UUID paymentId, Long paymentOrderCode, String paymentLinkId, String checkoutUrl, String qrCode) {
+        this.paymentId = paymentId;
+        this.paymentOrderCode = paymentOrderCode;
+        this.paymentLinkId = paymentLinkId;
+        this.checkoutUrl = checkoutUrl;
+        this.qrCode = qrCode;
+        this.failureReason = null;
+        this.cancelledAt = null;
+        this.status = OrderStatus.PAYMENT_PENDING;
+    }
+
+    public void markConfirmed() {
+        this.status = OrderStatus.CONFIRMED;
+        this.failureReason = null;
+        this.cancelledAt = null;
+        this.paidAt = LocalDateTime.now();
+    }
+
+    public void markFailed(String reason) {
+        this.status = OrderStatus.FAILED;
+        this.failureReason = reason;
+    }
+
+    public void markCancelled(String reason) {
+        this.status = OrderStatus.CANCELLED;
+        this.failureReason = reason;
+        this.cancelledAt = LocalDateTime.now();
+    }
 
     @PrePersist
-    void prePersist() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
+    void onCreate() {
         LocalDateTime now = LocalDateTime.now();
-        createdAt = now;
-        updatedAt = now;
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
     @PreUpdate
-    void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public void addItem(OrderItem item) {
-        items.add(item);
-        item.setOrder(this);
+    void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() {
         return id;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getOrderCode() {
-        return orderCode;
-    }
-
-    public void setOrderCode(String orderCode) {
-        this.orderCode = orderCode;
-    }
-
     public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(UUID userId) {
-        this.userId = userId;
+    public String getBuyerName() {
+        return buyerName;
     }
 
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
+    public String getBuyerEmail() {
+        return buyerEmail;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    public String getDescription() {
+        return description;
     }
 
     public String getCurrency() {
         return currency;
     }
 
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
     }
 
     public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
-    public String getShippingAddress() {
-        return shippingAddress;
-    }
-
-    public void setShippingAddress(String shippingAddress) {
-        this.shippingAddress = shippingAddress;
-    }
-
     public UUID getPaymentId() {
         return paymentId;
     }
 
-    public void setPaymentId(UUID paymentId) {
-        this.paymentId = paymentId;
+    public Long getPaymentOrderCode() {
+        return paymentOrderCode;
     }
 
-    public String getNote() {
-        return note;
+    public String getPaymentLinkId() {
+        return paymentLinkId;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public String getCheckoutUrl() {
+        return checkoutUrl;
+    }
+
+    public String getQrCode() {
+        return qrCode;
+    }
+
+    public String getFailureReason() {
+        return failureReason;
+    }
+
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -165,10 +226,6 @@ public class Order {
     }
 
     public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public List<SagaTransaction> getSagaTransactions() {
-        return sagaTransactions;
+        return List.copyOf(items);
     }
 }
