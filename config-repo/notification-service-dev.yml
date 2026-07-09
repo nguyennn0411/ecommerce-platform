@@ -4,6 +4,45 @@ server:
 spring:
   application:
     name: notification-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ecommerce_notification_service}
+    username: ${SPRING_DATASOURCE_USERNAME:ecommerce}
+    password: ${SPRING_DATASOURCE_PASSWORD:ecommerce}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_APP_PASSWORD:${SPRING_MAIL_PASSWORD:}}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: ${MAIL_SSL_TRUST:smtp.gmail.com}
+
+notification:
+  mail:
+    enabled: ${NOTIFICATION_MAIL_ENABLED:true}
+    from: ${MAIL_FROM:}
+    from-name: ${MAIL_FROM_NAME:Ecommerce Store}
+    reply-to: ${MAIL_REPLY_TO:}
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
 
 ecommerce:
   service-description: "Sends email or SMS confirmations for orders, payments, and shipping."

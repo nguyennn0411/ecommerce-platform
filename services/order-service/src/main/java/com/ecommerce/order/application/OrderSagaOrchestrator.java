@@ -3,6 +3,7 @@ package com.ecommerce.order.application;
 import com.ecommerce.order.client.InventoryGatewayClient;
 import com.ecommerce.order.client.PaymentGatewayClient;
 import com.ecommerce.order.domain.Order;
+import com.ecommerce.order.dto.InventoryAdjustmentResponse;
 import com.ecommerce.order.dto.InventoryReservationResponse;
 import com.ecommerce.order.dto.PaymentCreateRequest;
 import com.ecommerce.order.dto.PaymentCreateResponse;
@@ -24,8 +25,12 @@ public class OrderSagaOrchestrator {
         return inventoryGatewayClient.reserve(order);
     }
 
-    public InventoryReservationResponse releaseInventoryFor(Order order) {
+    public InventoryAdjustmentResponse releaseInventoryFor(Order order) {
         return inventoryGatewayClient.release(order);
+    }
+
+    public InventoryAdjustmentResponse confirmInventoryFor(Order order) {
+        return inventoryGatewayClient.confirm(order.getId());
     }
 
     public PaymentCreateResponse createPaymentFor(Order order) {

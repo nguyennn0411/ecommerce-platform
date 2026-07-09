@@ -40,12 +40,16 @@ Content-Type: application/json
     {
       "productId": "{{productId1}}",
       "productName": "iPhone 15 Pro",
+      "size": "42",
+      "color": "Black",
       "quantity": 1,
       "unitPrice": 25000000
     },
     {
       "productId": "{{productId2}}",
       "productName": "AirPods Pro 2",
+      "size": "40",
+      "color": null,
       "quantity": 1,
       "unitPrice": 6000000
     }

@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     product_id UUID,
     product_name VARCHAR(255) NOT NULL,
+    size VARCHAR(20) NOT NULL,
+    color VARCHAR(50),
     quantity INTEGER NOT NULL,
     unit_price NUMERIC(19, 2) NOT NULL,
     line_total NUMERIC(19, 2) NOT NULL

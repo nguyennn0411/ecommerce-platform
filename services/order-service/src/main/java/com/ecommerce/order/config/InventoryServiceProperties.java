@@ -7,7 +7,8 @@ public class InventoryServiceProperties {
 
     private String baseUrl;
     private String reservationPath;
-    private String releasePath;
+    private String confirmPathTemplate;
+    private String releasePathTemplate;
 
     public String getBaseUrl() {
         return baseUrl;
@@ -25,11 +26,19 @@ public class InventoryServiceProperties {
         this.reservationPath = reservationPath;
     }
 
-    public String getReleasePath() {
-        return releasePath;
+    public String getConfirmPathTemplate() {
+        return confirmPathTemplate;
     }
 
-    public void setReleasePath(String releasePath) {
-        this.releasePath = releasePath;
+    public void setConfirmPathTemplate(String confirmPathTemplate) {
+        this.confirmPathTemplate = confirmPathTemplate;
+    }
+
+    public String getReleasePathTemplate() {
+        return releasePathTemplate;
+    }
+
+    public void setReleasePathTemplate(String releasePathTemplate) {
+        this.releasePathTemplate = releasePathTemplate;
     }
 }

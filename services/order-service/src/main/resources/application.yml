@@ -35,7 +35,8 @@ payment-service:
 inventory-service:
   base-url: ${INVENTORY_SERVICE_BASE_URL:http://localhost:8083}
   reservation-path: ${INVENTORY_SERVICE_RESERVATION_PATH:/api/v1/inventory/reservations}
-  release-path: ${INVENTORY_SERVICE_RELEASE_PATH:/api/v1/inventory/reservations/release}
+  confirm-path-template: ${INVENTORY_SERVICE_CONFIRM_PATH_TEMPLATE:/api/v1/inventory/reservations/%s/confirm}
+  release-path-template: ${INVENTORY_SERVICE_RELEASE_PATH_TEMPLATE:/api/v1/inventory/reservations/%s/release}
 
 eureka:
   client:

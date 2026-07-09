@@ -11,6 +11,8 @@ import java.util.UUID;
 public record CreateOrderItemRequest(
         UUID productId,
         @NotBlank String productName,
+        @NotBlank String size,
+        String color,
         @Min(1) int quantity,
         @NotNull
         @DecimalMin(value = "0.01", message = "unitPrice must be greater than 0") BigDecimal unitPrice

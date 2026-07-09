@@ -78,6 +78,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentSuccess(UUID orderId) {
         Order order = findOrder(orderId);
+        orderSagaOrchestrator.confirmInventoryFor(order);
         order.markConfirmed();
         orderRepository.save(order);
     }
@@ -103,6 +104,8 @@ public class OrderServiceImpl implements OrderService {
         return new OrderItem(
                 request.productId(),
                 request.productName(),
+                request.size(),
+                request.color(),
                 request.quantity(),
                 request.unitPrice()
         );

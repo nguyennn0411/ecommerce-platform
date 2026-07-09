@@ -4,7 +4,8 @@ import java.util.UUID;
 
 public record InventoryReservationItemRequest(
         UUID productId,
-        String productName,
+        String size,
+        String color,
         int quantity
 ) {
 }

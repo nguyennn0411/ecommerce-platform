@@ -9,6 +9,8 @@ public record OrderItemResponse(
         UUID id,
         UUID productId,
         String productName,
+        String size,
+        String color,
         int quantity,
         BigDecimal unitPrice,
         BigDecimal lineTotal
@@ -18,6 +20,8 @@ public record OrderItemResponse(
                 item.getId(),
                 item.getProductId(),
                 item.getProductName(),
+                item.getSize(),
+                item.getColor(),
                 item.getQuantity(),
                 item.getUnitPrice(),
                 item.getLineTotal()

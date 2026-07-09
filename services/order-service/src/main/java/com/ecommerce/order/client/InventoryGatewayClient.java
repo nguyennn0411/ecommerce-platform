@@ -2,12 +2,11 @@ package com.ecommerce.order.client;
 
 import com.ecommerce.order.config.InventoryServiceProperties;
 import com.ecommerce.order.domain.Order;
+import com.ecommerce.order.dto.InventoryAdjustmentResponse;
 import com.ecommerce.order.dto.InventoryReservationItemRequest;
 import com.ecommerce.order.dto.InventoryReservationRequest;
 import com.ecommerce.order.dto.InventoryReservationResponse;
 import com.ecommerce.order.exception.OrderIntegrationException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,46 +14,65 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.UUID;
+
 @Component
 public class InventoryGatewayClient {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
     private final InventoryServiceProperties properties;
 
     public InventoryGatewayClient(RestTemplate restTemplate,
-                                  ObjectMapper objectMapper,
                                   InventoryServiceProperties properties) {
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
         this.properties = properties;
     }
 
     public InventoryReservationResponse reserve(Order order) {
-        return post(buildReservationUrl(), order);
+        InventoryReservationResponse response = postReservation(buildReservationUrl(), order);
+        if (response == null || !response.reserved()) {
+            throw new OrderIntegrationException(response == null
+                    ? "Inventory service returned an empty reservation response"
+                    : response.message());
+        }
+        return response;
     }
 
-    public InventoryReservationResponse release(Order order) {
-        return post(buildReleaseUrl(), order);
+    public InventoryAdjustmentResponse confirm(UUID orderId) {
+        InventoryAdjustmentResponse response = postAdjustment(buildConfirmUrl(orderId));
+        if (response == null || !response.success()) {
+            throw new OrderIntegrationException(response == null
+                    ? "Inventory service returned an empty confirm response"
+                    : response.message());
+        }
+        return response;
     }
 
-    private InventoryReservationResponse post(String url, Order order) {
+    public InventoryAdjustmentResponse release(Order order) {
+        return postAdjustment(buildReleaseUrl(order.getId()));
+    }
+
+    private InventoryReservationResponse postReservation(String url, Order order) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<InventoryReservationRequest> entity = new HttpEntity<>(toRequest(order), headers);
 
         try {
-            JsonNode root = restTemplate.postForObject(url, entity, JsonNode.class);
-            if (root == null || root.path("success").isMissingNode() || !root.path("success").asBoolean()) {
-                throw new OrderIntegrationException(extractMessage(root, "Inventory service returned an unsuccessful response"));
-            }
-            JsonNode data = root.path("data");
-            if (data.isMissingNode() || data.isNull()) {
-                throw new OrderIntegrationException("Inventory service returned an empty data payload");
-            }
-            return objectMapper.treeToValue(data, InventoryReservationResponse.class);
+            return restTemplate.postForObject(url, entity, InventoryReservationResponse.class);
         } catch (RestClientResponseException exception) {
-            throw new OrderIntegrationException("Inventory service error: " + extractMessage(exception.getResponseBodyAsString(), exception.getStatusText()), exception);
+            throw new OrderIntegrationException("Inventory service error: " + exception.getStatusText(), exception);
+        } catch (OrderIntegrationException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new OrderIntegrationException("Unable to communicate with inventory service", exception);
+        }
+    }
+
+    private InventoryAdjustmentResponse postAdjustment(String url) {
+        try {
+            return restTemplate.postForObject(url, null, InventoryAdjustmentResponse.class);
+        } catch (RestClientResponseException exception) {
+            throw new OrderIntegrationException("Inventory service error: " + exception.getStatusText(), exception);
         } catch (OrderIntegrationException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -66,7 +84,7 @@ public class InventoryGatewayClient {
         return new InventoryReservationRequest(
                 order.getId(),
                 order.getItems().stream()
-                        .map(item -> new InventoryReservationItemRequest(item.getProductId(), item.getProductName(), item.getQuantity()))
+                        .map(item -> new InventoryReservationItemRequest(item.getProductId(), item.getSize(), item.getColor(), item.getQuantity()))
                         .toList()
         );
     }
@@ -75,29 +93,11 @@ public class InventoryGatewayClient {
         return properties.getBaseUrl() + properties.getReservationPath();
     }
 
-    private String buildReleaseUrl() {
-        return properties.getBaseUrl() + properties.getReleasePath();
+    private String buildConfirmUrl(UUID orderId) {
+        return properties.getBaseUrl() + properties.getConfirmPathTemplate().formatted(orderId);
     }
 
-    private String extractMessage(JsonNode root, String fallback) {
-        if (root != null) {
-            JsonNode message = root.get("message");
-            if (message != null && !message.isNull() && !message.asText().isBlank()) {
-                return message.asText();
-            }
-        }
-        return fallback;
-    }
-
-    private String extractMessage(String body, String fallback) {
-        if (body == null || body.isBlank()) {
-            return fallback;
-        }
-        try {
-            JsonNode root = objectMapper.readTree(body);
-            return extractMessage(root, fallback);
-        } catch (Exception ignored) {
-            return fallback;
-        }
+    private String buildReleaseUrl(UUID orderId) {
+        return properties.getBaseUrl() + properties.getReleasePathTemplate().formatted(orderId);
     }
 }

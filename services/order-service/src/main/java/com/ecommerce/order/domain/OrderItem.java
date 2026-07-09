@@ -28,6 +28,12 @@ public class OrderItem {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Column(nullable = false, length = 20)
+    private String size;
+
+    @Column(length = 50)
+    private String color;
+
     @Column(nullable = false)
     private int quantity;
 
@@ -40,9 +46,12 @@ public class OrderItem {
     protected OrderItem() {
     }
 
-    public OrderItem(UUID productId, String productName, int quantity, BigDecimal unitPrice) {
+    public OrderItem(UUID productId, String productName, String size, String color, int quantity, BigDecimal unitPrice) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Item quantity must be greater than 0");
+        }
+        if (size == null || size.isBlank()) {
+            throw new IllegalArgumentException("Item size is required");
         }
         if (unitPrice == null || unitPrice.signum() <= 0) {
             throw new IllegalArgumentException("Item unitPrice must be greater than 0");
@@ -50,6 +59,8 @@ public class OrderItem {
         this.id = UUID.randomUUID();
         this.productId = productId;
         this.productName = productName;
+        this.size = size.trim();
+        this.color = color == null || color.isBlank() ? null : color.trim();
         this.quantity = quantity;
         this.unitPrice = unitPrice;
         this.lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
@@ -69,6 +80,14 @@ public class OrderItem {
 
     public String getProductName() {
         return productName;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public String getColor() {
+        return color;
     }
 
     public int getQuantity() {
