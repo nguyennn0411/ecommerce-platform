@@ -35,20 +35,6 @@ spring:
           uri: lb://notification-service
           predicates:
             - Path=/api/v1/notifications/**
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:869521387044-da2mno3083lj4f33t3i3fg8rb2vrs58j.apps.googleusercontent.com}
-            client-secret: ${GOOGLE_CLIENT_SECRET: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}
-            scope:
-              - openid
-              - profile
-              - email
-jwt:
-  secret: ${JWT_SECRET_KEY:v9B4pK3m9zX8wQ2r5t7yU1i4o6p8a0s2d4f6g8h0j2k4l6z8x0c2v4b6n8m0QWERTY}
-  expiration-ms: 3600000
 
 eureka:
   client:

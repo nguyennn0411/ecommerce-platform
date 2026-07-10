@@ -2,41 +2,49 @@ package com.ecommerce.user.domain.model.valueobjects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Embeddable
-@Getter
-@EqualsAndHashCode
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public final class GeographicAddress {
 
     @Column(name = "address_line", nullable = false, length = 500)
     private String addressLine;
 
-    @Column(name = "city", nullable = false, length = 100)
+    @Column(name = "city", length = 100)
     private String city;
 
-    @Column(name = "district", nullable = false, length = 100)
+    @Column(name = "district", length = 100)
     private String district;
 
-    @Column(name = "ward", nullable = false, length = 100)
+    @Column(name = "ward", length = 100)
     private String ward;
 
+    public GeographicAddress() {
+    }
+
     public GeographicAddress(String addressLine, String city, String district, String ward) {
-        this.addressLine = validateNotBlank(addressLine, "Address line");
-        this.city = validateNotBlank(city, "City");
-        this.district = validateNotBlank(district, "District");
-        this.ward = validateNotBlank(ward, "Ward");
+        this.addressLine = addressLine;
+        this.city = city;
+        this.district = district;
+        this.ward = ward;
     }
 
-    private String validateNotBlank(String value, String fieldName) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
-        }
-        return value.trim();
+    public GeographicAddress(String addressLine) {
+        this.addressLine = addressLine;
     }
 
+    public String getAddressLine() {
+        return addressLine;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public String getWard() {
+        return ward;
+    }
 }
