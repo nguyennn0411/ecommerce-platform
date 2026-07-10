@@ -7,7 +7,7 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:5432/ecommerce_payment_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ecommerce_payment_service}
     username: ${SPRING_DATASOURCE_USERNAME:ecommerce}
     password: ${SPRING_DATASOURCE_PASSWORD:ecommerce}
   jpa:
@@ -30,9 +30,9 @@ spring:
 
 payos:
   base-url: ${PAYOS_BASE_URL:https://api-merchant.payos.vn}
-  client-id: ${PAYOS_CLIENT_ID:}
-  api-key: ${PAYOS_API_KEY:}
-  checksum-key: ${PAYOS_CHECKSUM_KEY:}
+  client-id: ${PAYOS_CLIENT_ID:b65ae176-ca2a-4aff-8db0-57d27933f959}
+  api-key: ${PAYOS_API_KEY:457199d8-e125-4473-90c9-33e1bfc5353a}
+  checksum-key: ${PAYOS_CHECKSUM_KEY:4453e34a27b143270faf679520d7b07feac35669204a05bfe1c93eeabd8b474f}
   return-url: ${PAYOS_RETURN_URL:http://localhost:5173/payment/success}
   cancel-url: ${PAYOS_CANCEL_URL:http://localhost:5173/payment/cancel}
   webhook-url: ${PAYOS_WEBHOOK_URL:http://localhost:8085/api/payments/payos/webhook}
