@@ -92,7 +92,22 @@ CREATE TABLE product_images (
                                 created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                                 CONSTRAINT fk_product_images_product
-                                    FOREIGN KEY (product_id) REFERENCES products(id)
+                                    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+CREATE TABLE product_variants (
+                                  id UUID PRIMARY KEY,
+                                  product_id UUID NOT NULL,
+                                  size VARCHAR(20) NOT NULL,
+                                  color VARCHAR(50),
+                                  sku VARCHAR(100),
+                                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                  updated_at TIMESTAMP,
+
+                                  CONSTRAINT fk_product_variants_product
+                                      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+                                  CONSTRAINT uq_product_variants_product_size_color
+                                      UNIQUE (product_id, size, color)
 );
 
 
