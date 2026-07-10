@@ -18,7 +18,7 @@ spring:
         - id: product-catalog-service
           uri: lb://product-catalog-service
           predicates:
-            - Path=/api/v1/products/**
+            - Path=/api/v1/products/**,/api/v1/categories/**
         - id: inventory-service
           uri: lb://inventory-service
           predicates:
