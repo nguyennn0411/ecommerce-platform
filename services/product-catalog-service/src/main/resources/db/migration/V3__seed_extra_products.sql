@@ -7,7 +7,7 @@ VALUES
     (
         'cccccccc-cccc-cccc-cccc-cccccccccc01',
         'Running',
-        'Giày chạy bộ và performance'
+        'Giày chạy bộ và hiệu năng'
     ),
     (
         'cccccccc-cccc-cccc-cccc-cccccccccc02',
@@ -50,7 +50,7 @@ VALUES
         '10000000-0000-0000-0000-000000000003',
         'New Balance 574',
         'New Balance',
-        'Classic lifestyle với đế ENCAP ổn định',
+        'Kiểu dáng lifestyle cổ điển với đế ENCAP ổn định',
         'cccccccc-cccc-cccc-cccc-cccccccccc02',
         2800000.00,
         'ACTIVE'
@@ -68,7 +68,7 @@ VALUES
         '10000000-0000-0000-0000-000000000005',
         'Vans Old Skool',
         'Vans',
-        'Sneaker skate icon với sọc side stripe',
+        'Sneaker skate biểu tượng với sọc bên đặc trưng',
         'cccccccc-cccc-cccc-cccc-cccccccccccc',
         1700000.00,
         'ACTIVE'
@@ -77,7 +77,7 @@ VALUES
         '10000000-0000-0000-0000-000000000006',
         'Nike Dunk Low',
         'Nike',
-        'Low-top lifestyle, phối màu dễ mix đồ',
+        'Giày low-top lifestyle, dễ phối đồ',
         'cccccccc-cccc-cccc-cccc-cccccccccc02',
         3100000.00,
         'ACTIVE'
@@ -95,7 +95,7 @@ VALUES
         '10000000-0000-0000-0000-000000000008',
         'Asics Gel-Kayano 30',
         'Asics',
-        'Ổn định cao, phù hợp runner cần support',
+        'Ổn định cao, phù hợp runner cần hỗ trợ',
         'cccccccc-cccc-cccc-cccc-cccccccccc01',
         4200000.00,
         'ACTIVE'
@@ -104,7 +104,7 @@ VALUES
         '10000000-0000-0000-0000-000000000009',
         'Puma Suede Classic',
         'Puma',
-        'Suede lifestyle mang tính biểu tượng',
+        'Sneaker da lộn lifestyle mang tính biểu tượng',
         'cccccccc-cccc-cccc-cccc-cccccccccccc',
         2100000.00,
         'ACTIVE'
@@ -113,7 +113,7 @@ VALUES
         '10000000-0000-0000-0000-000000000010',
         'Jordan 1 Mid',
         'Nike',
-        'Silhouette basketball lifestyle trung tính',
+        'Form bóng rổ mid lifestyle trung tính',
         'cccccccc-cccc-cccc-cccc-cccccccccc02',
         3900000.00,
         'ACTIVE'
