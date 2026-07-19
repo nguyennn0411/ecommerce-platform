@@ -33,12 +33,12 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ApiResponse<OrderResponse> getById(@PathVariable UUID orderId) {
+    public ApiResponse<OrderResponse> getById(@PathVariable("orderId") UUID orderId) {
         return ok(orderService.getOrder(orderId), "OK");
     }
 
     @GetMapping
-    public ApiResponse<List<OrderResponse>> getByUser(@RequestParam UUID userId) {
+    public ApiResponse<List<OrderResponse>> getByUser(@RequestParam("userId") UUID userId) {
         return ok(orderService.getOrdersByUser(userId), "OK");
     }
 
