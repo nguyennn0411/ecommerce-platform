@@ -13,8 +13,6 @@ spring:
           uri: lb://user-service
           predicates:
             - Path=/api/v1/users/**
-          filters:
-            - TokenRelay
         - id: product-catalog-service
           uri: lb://product-catalog-service
           predicates:
@@ -30,7 +28,14 @@ spring:
         - id: payment-service
           uri: lb://payment-service
           predicates:
+            - Path=/api/payments/**
+        - id: payment-service-v1
+          uri: lb://payment-service
+          predicates:
             - Path=/api/v1/payments/**
+          filters:
+            - StripPrefix=2
+            - PrefixPath=/api
         - id: notification-service
           uri: lb://notification-service
           predicates:

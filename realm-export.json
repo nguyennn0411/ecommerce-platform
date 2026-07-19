@@ -2611,6 +2611,26 @@
     "scimApiEnabled": "false"
   },
   "keycloakVersion": "26.6.3",
+  "users": [
+    {
+      "username": "demo@stepzone.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Demo",
+      "lastName": "Customer",
+      "email": "demo@stepzone.local",
+      "realmRoles": [
+        "CUSTOMER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "StepZone@123",
+          "temporary": false
+        }
+      ]
+    }
+  ],
   "userManagedAccessAllowed": false,
   "organizationsEnabled": false,
   "verifiableCredentialsEnabled": false,

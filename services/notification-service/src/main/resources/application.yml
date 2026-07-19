@@ -28,24 +28,24 @@ spring:
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_APP_PASSWORD:${SPRING_MAIL_PASSWORD:}}
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:phucnguyenxt2004@gmail.com}
+    password: ${MAIL_APP_PASSWORD:${SPRING_MAIL_PASSWORD:nxvy xgbw pkde cvhe}}
     properties:
       mail:
         smtp:
-          auth: true
+          auth: ${MAIL_SMTP_AUTH:false}
           starttls:
-            enable: true
-            required: true
+            enable: ${MAIL_STARTTLS_ENABLED:false}
+            required: ${MAIL_STARTTLS_REQUIRED:false}
           ssl:
-            trust: ${MAIL_SSL_TRUST:smtp.gmail.com}
+            trust: ${MAIL_SSL_TRUST:localhost}
 
 notification:
   mail:
     enabled: ${NOTIFICATION_MAIL_ENABLED:true}
-    from: ${MAIL_FROM:}
+    from: ${MAIL_FROM:local@ecommerce.test}
     from-name: ${MAIL_FROM_NAME:Ecommerce Store}
     reply-to: ${MAIL_REPLY_TO:}
     frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}

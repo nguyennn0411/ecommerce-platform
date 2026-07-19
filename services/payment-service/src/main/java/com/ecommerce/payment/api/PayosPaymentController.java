@@ -43,6 +43,16 @@ public class PayosPaymentController {
         return ApiResponse.ok(response, messageFrom(response));
     }
 
+    /**
+     * PayOS validates the callback URL with a probe before it starts sending
+     * signed POST webhooks. Keep this endpoint public; payment state can only
+     * be changed by the signed POST handler above.
+     */
+    @GetMapping("/webhook")
+    public ApiResponse<Map<String, Object>> webhookProbe() {
+        return ApiResponse.ok(Map.of("received", true), "PayOS webhook endpoint is available");
+    }
+
     @PostMapping("/confirm-webhook")
     public ApiResponse<ConfirmPayosWebhookResponse> confirmWebhook(
             @Valid @RequestBody ConfirmPayosWebhookRequest request) {

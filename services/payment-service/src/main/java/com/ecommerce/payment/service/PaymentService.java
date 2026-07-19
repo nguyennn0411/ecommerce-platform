@@ -21,6 +21,12 @@ public interface PaymentService {
 
     PaymentResponse getPaymentByOrderId(UUID orderId);
 
+    /**
+     * Reconcile a pending payment with PayOS. This is used after returning from
+     * the checkout page when a webhook was delayed or could not be delivered.
+     */
+    PaymentResponse syncPaymentByOrderId(UUID orderId);
+
     PaymentResponse getPaymentById(UUID paymentId);
 
     PaymentResponse cancelPayment(UUID paymentId, CancelPaymentRequest request);
