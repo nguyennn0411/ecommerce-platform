@@ -88,9 +88,9 @@ services:
       - "3000:3000"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.6.3
     container_name: ecommerce-keycloak
-    command: start-dev
+    command: start-dev --import-realm
     depends_on:
       postgres-init:
         condition: service_completed_successfully
@@ -105,6 +105,8 @@ services:
       KC_DB_PASSWORD: ecommerce
     ports:
       - "8180:8080"
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
 
 volumes:
   ecommerce-postgres-data:
