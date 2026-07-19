@@ -11,9 +11,22 @@ ALTER TABLE payments
     ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP;
 
-UPDATE payments
-SET payment_provider = COALESCE(provider, 'PAYOS')
-WHERE payment_provider IS NULL;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = current_schema()
+          AND table_name = 'payments'
+          AND column_name = 'provider'
+    ) THEN
+        EXECUTE 'UPDATE payments SET payment_provider = COALESCE(provider, ''PAYOS'') WHERE payment_provider IS NULL';
+    ELSE
+        UPDATE payments
+        SET payment_provider = 'PAYOS'
+        WHERE payment_provider IS NULL;
+    END IF;
+END $$;
 
 ALTER TABLE payments
     ALTER COLUMN payment_provider SET NOT NULL;
