@@ -1,5 +1,6 @@
 package com.ecommerce.payment.service;
 
+import com.ecommerce.payment.dto.ConfirmPayosWebhookResponse;
 import com.ecommerce.payment.dto.PayosCreatePaymentRequest;
 import com.ecommerce.payment.dto.PayosCreatePaymentResponse;
 import com.ecommerce.payment.dto.PayosWebhookRequest;
@@ -13,4 +14,6 @@ public interface PayosPaymentService {
     PayosCreatePaymentResponse cancelPayment(Long orderCode, String reason);
 
     boolean verifyWebhookSignature(PayosWebhookRequest request);
+
+    ConfirmPayosWebhookResponse confirmWebhook(String webhookUrl);
 }

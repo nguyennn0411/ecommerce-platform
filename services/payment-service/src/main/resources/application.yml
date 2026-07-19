@@ -36,6 +36,7 @@ payos:
   return-url: ${PAYOS_RETURN_URL:http://localhost:5173/payment/success}
   cancel-url: ${PAYOS_CANCEL_URL:http://localhost:5173/payment/cancel}
   webhook-url: ${PAYOS_WEBHOOK_URL:http://localhost:8085/api/payments/payos/webhook}
+  log-level: ${PAYOS_LOG_LEVEL:NONE}
 
 eureka:
   client:

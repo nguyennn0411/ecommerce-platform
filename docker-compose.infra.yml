@@ -30,11 +30,11 @@ services:
       - -c
       - |
         set -e
-        for db in ecommerce_user_service ecommerce_product_catalog_service ecommerce_inventory_service ecommerce_order_service ecommerce_payment_service ecommerce_payment_db ecommerce_notification_service keycloak; do
+        for db in ecommerce ecommerce_user_service ecommerce_product_catalog_service ecommerce_inventory_service ecommerce_order_service ecommerce_payment_service ecommerce_payment_db ecommerce_notification_service keycloak; do
           if psql -h postgres -U ecommerce -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$$db'" | grep -q 1; then
             echo "Database $$db already exists"
           else
-            psql -h postgres -U ecommerce -d ecommerce -c "CREATE DATABASE \"$$db\""
+            psql -h postgres -U ecommerce -d postgres -c "CREATE DATABASE \"$$db\" OWNER ecommerce"
             echo "Created database $$db"
           fi
         done
@@ -92,7 +92,7 @@ services:
     container_name: ecommerce-keycloak
     command: start-dev
     depends_on:
-      postgres:
+      postgres-init:
         condition: service_completed_successfully
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin

@@ -149,8 +149,15 @@ public class PaymentServiceImpl implements PaymentService {
         if (data.orderCode() == null) {
             throw new IllegalArgumentException("Webhook orderCode is required");
         }
-        Payment payment = paymentRepository.findByOrderCodeForUpdate(data.orderCode())
-                .orElseThrow(() -> PaymentNotFoundException.byOrderCode(data.orderCode()));
+        Payment payment = paymentRepository.findByOrderCodeForUpdate(data.orderCode()).orElse(null);
+        if (payment == null) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("received", true);
+            response.put("orderCode", data.orderCode());
+            response.put("status", "IGNORED");
+            response.put("message", "Webhook acknowledged for an unknown payment");
+            return response;
+        }
 
         validateWebhookPayload(payment, data);
 

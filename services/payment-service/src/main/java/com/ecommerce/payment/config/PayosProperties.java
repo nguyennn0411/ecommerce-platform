@@ -26,6 +26,9 @@ public class PayosProperties {
     @NotBlank
     private String webhookUrl;
 
+    @NotBlank
+    private String logLevel = "NONE";
+
     public boolean hasCredentials() {
         return hasText(clientId) && hasText(apiKey) && hasText(checksumKey);
     }
@@ -88,5 +91,13 @@ public class PayosProperties {
 
     public void setWebhookUrl(String webhookUrl) {
         this.webhookUrl = webhookUrl;
+    }
+
+    public String getLogLevel() {
+        return logLevel;
+    }
+
+    public void setLogLevel(String logLevel) {
+        this.logLevel = logLevel;
     }
 }
