@@ -40,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(noRollbackFor = OrderIntegrationException.class)
     public OrderResponse createOrder(CreateOrderRequest request) {
+        // Product la nguon gia hien tai; khong tin gia FE gui len.
         productGatewayClient.validateProducts(request);
 
         Order order = new Order(
@@ -51,9 +52,11 @@ public class OrderServiceImpl implements OrderService {
                 normalizeShippingFee(request.shippingFee()),
                 request.items().stream().map(this::toOrderItem).toList()
         );
+        // Luu don truoc khi goi service khac de co orderId cho Inventory va Payment.
         order = orderRepository.save(order);
 
         try {
+            // Thu tu Saga: giu hang -> tao payment -> chuyen don sang cho thanh toan.
             orderSagaOrchestrator.reserveInventoryFor(order);
             PaymentCreateResponse payment = orderSagaOrchestrator.createPaymentFor(order);
             order.markPaymentPending(
@@ -65,6 +68,7 @@ public class OrderServiceImpl implements OrderService {
             );
             return OrderResponse.from(orderRepository.save(order));
         } catch (OrderIntegrationException exception) {
+            // Neu mot buoc lien service loi, hoan tac phan giu hang da lam truoc do.
             safelyReleaseInventory(order);
             order.markFailed(exception.getMessage());
             orderRepository.save(order);
@@ -90,10 +94,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentSuccess(UUID orderId) {
         Order order = findOrder(orderId);
+        // Event co the gui lai; chi xu ly don dang pending de tranh tru kho 2 lan.
         if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
             log.warn("Ignoring late payment success for order {} with status {}", orderId, order.getStatus());
             return;
         }
+        // Payment OK -> Inventory tru kho that -> don duoc xac nhan.
         orderSagaOrchestrator.confirmInventoryFor(order);
         order.markConfirmed();
         orderRepository.save(order);
@@ -103,6 +109,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentFailure(UUID orderId, String reason, boolean cancelled) {
         Order order = findOrder(orderId);
+        // Chi don pending moi duoc phep fail/huy va tra kho.
         if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
             log.warn("Ignoring payment failure for order {} with status {}", orderId, order.getStatus());
             return;
@@ -119,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelExpiredPaymentOrders() {
+        // Don pending qua 1 phut can tra hang de nguoi khac mua duoc.
         LocalDateTime expiredBefore = LocalDateTime.now().minusMinutes(1);
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(
                 com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING,
@@ -127,7 +135,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (Order order : expiredOrders) {
             try {
-                // Only cancel after Inventory accepts the compensation, so stock is never silently lost.
+                // Chi huy DB sau khi Inventory da nhan yeu cau tra hang; neu loi se retry lan sau.
                 orderSagaOrchestrator.releaseInventoryFor(order);
                 order.markCancelled("Payment was not completed within 1 minute");
                 orderRepository.save(order);
@@ -172,7 +180,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             orderSagaOrchestrator.releaseInventoryFor(order);
         } catch (OrderIntegrationException ignored) {
-            // Keep the order state transition even if compensation cannot complete immediately.
+            // Don van duoc danh dau loi; van hanh sau se xu ly viec tra kho neu can.
         }
     }
 }

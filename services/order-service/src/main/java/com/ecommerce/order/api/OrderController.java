@@ -27,25 +27,25 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    //tạo đơn hàng
+    // FE gui gio hang va thong tin giao hang vao day de bat dau Saga.
     @PostMapping
     public ApiResponse<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
         return ok(orderService.createOrder(request), "Order created and payment initiated");
     }
 
-    //lấy chi tiết trạng thái đơn dùng màn theo dõi đơn
+    // FE polling endpoint nay sau khi thanh toan de doc trang thai moi nhat.
     @GetMapping("/{orderId}")
     public ApiResponse<OrderResponse> getById(@PathVariable("orderId") UUID orderId) {
         return ok(orderService.getOrder(orderId), "OK");
     }
 
-    //lấy lịch sử đơn hàng của user
+    // Trang My Orders dung endpoint nay de lay lich su theo user.
     @GetMapping
     public ApiResponse<List<OrderResponse>> getByUser(@RequestParam("userId") UUID userId) {
         return ok(orderService.getOrdersByUser(userId), "OK");
     }
 
-    // format gói dữ liệu  trả về
+    // Tat ca endpoint tra ve cung mot response wrapper de FE xu ly dong nhat.
     private <T> ApiResponse<T> ok(T data, String message) {
         return new ApiResponse<>(true, data, message, Instant.now());
     }

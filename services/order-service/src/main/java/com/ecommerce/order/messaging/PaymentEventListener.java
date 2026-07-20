@@ -23,16 +23,19 @@ public class PaymentEventListener {
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_SUCCESS_QUEUE)
     public void onPaymentSuccess(PaymentSuccessEvent event) {
+        // Payment publish payment.success; Order nhan bat dong bo va xac nhan don.
         handle("payment.success", () -> orderService.handlePaymentSuccess(event.orderId()));
     }
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_FAILED_QUEUE)
     public void onPaymentFailed(PaymentFailedEvent event) {
+        // Payment fail -> Service goi Inventory release va doi don sang FAILED.
         handle("payment.failed", () -> orderService.handlePaymentFailure(event.orderId(), event.reason(), false));
     }
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_CANCELLED_QUEUE)
     public void onPaymentCancelled(PaymentCancelledEvent event) {
+        // Khach huy tren PayOS -> tra kho va doi don sang CANCELLED.
         handle("payment.cancelled", () -> orderService.handlePaymentFailure(event.orderId(), event.reason(), true));
     }
 
@@ -40,6 +43,7 @@ public class PaymentEventListener {
         try {
             action.run();
         } catch (RuntimeException exception) {
+            // Log de van hanh kiem tra va xu ly lai event loi.
             log.error("Unable to process {}", eventName, exception);
         }
     }
