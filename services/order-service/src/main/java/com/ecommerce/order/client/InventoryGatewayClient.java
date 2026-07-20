@@ -31,6 +31,7 @@ public class InventoryGatewayClient {
     }
 
     public void reserve(Order order) {
+        // Gửi orderId + productId + size + color + quantity sang Inventory.
         InventoryReservationResponse response = reserveInventory(buildReservationUrl(), order);
         if (response == null || !response.reserved()) {
             throw new OrderIntegrationException(response == null || response.message() == null || response.message().isBlank()
@@ -40,11 +41,13 @@ public class InventoryGatewayClient {
     }
 
     public void confirm(Order order) {
+        // Thanh toán OK: gọi Kho trừ tồn thật.
         InventoryAdjustmentResponse response = adjustInventory(buildConfirmUrl(order), null);
         validateAdjustment(response, "Inventory confirmation failed");
     }
 
     public void release(Order order) {
+        // Payment fail/hủy/quá hạn: trả phần hàng đã giữ.
         InventoryAdjustmentResponse response = adjustInventory(buildReleaseUrl(order), "payment-failed");
         validateAdjustment(response, "Inventory release failed");
     }
@@ -89,7 +92,7 @@ public class InventoryGatewayClient {
 
     private InventoryReservationRequest toRequest(Order order) {
         return new InventoryReservationRequest(
-                order.getId(),
+                order.getId(),  // Inventory dùng orderId để biết đơn nào giữ hàng
                 order.getItems().stream()
                         .map(item -> new InventoryReservationItemRequest(
                                 item.getProductId(),

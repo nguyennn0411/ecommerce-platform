@@ -105,7 +105,9 @@ public class Order {
         this.description = description;
         this.currency = currency;
         this.shippingFee = shippingFee == null ? BigDecimal.ZERO : shippingFee;
+        // Đơn mới tạo, chưa giữ hàng/chưa tạo Payment.
         this.status = OrderStatus.CREATED;
+        // Tổng tiền = tiền các item + phí giao hàng.
         this.totalAmount = items.stream()
                 .map(OrderItem::getLineTotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -122,13 +124,14 @@ public class Order {
         this.paymentId = paymentId;
         this.paymentOrderCode = paymentOrderCode;
         this.paymentLinkId = paymentLinkId;
-        this.checkoutUrl = checkoutUrl;
+        this.checkoutUrl = checkoutUrl;   // FE dùng link này mở PayOS.
         this.qrCode = qrCode;
         this.failureReason = null;
         this.cancelledAt = null;
         this.status = OrderStatus.PAYMENT_PENDING;
     }
 
+    // Payment thành công và Inventory đã trừ kho
     public void markConfirmed() {
         this.status = OrderStatus.CONFIRMED;
         this.failureReason = null;
@@ -136,6 +139,7 @@ public class Order {
         this.paidAt = LocalDateTime.now();
     }
 
+    // Payment lỗi hoặc người dùng không trả tiền kịp.
     public void markFailed(String reason) {
         this.status = OrderStatus.FAILED;
         this.failureReason = reason;

@@ -31,13 +31,19 @@ public class PaymentGatewayClient {
     public PaymentCreateResponse createPayment(PaymentCreateRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Đóng gói dữ liệu đơn rồi POST sang Payment Service.
         HttpEntity<PaymentCreateRequest> entity = new HttpEntity<>(request, headers);
 
         try {
             JsonNode root = restTemplate.postForObject(buildCreateUrl(), entity, JsonNode.class);
+
+            // Payment trả success=false thì Order coi là lỗi.
             if (root == null || root.path("success").isMissingNode() || !root.path("success").asBoolean()) {
                 throw new OrderIntegrationException(extractMessage(root, "Payment service returned an unsuccessful response"));
             }
+
+            // Lấy phần data gồm paymentId, checkoutUrl, QR...
             JsonNode data = root.path("data");
             if (data.isMissingNode() || data.isNull()) {
                 throw new OrderIntegrationException("Payment service returned an empty data payload");
@@ -53,6 +59,7 @@ public class PaymentGatewayClient {
     }
 
     private String buildCreateUrl() {
+        // Ghép base URL Payment với path tạo PayOS.
         return properties.getBaseUrl() + properties.getCreatePayosPath();
     }
 
