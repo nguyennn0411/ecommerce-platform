@@ -17,4 +17,6 @@ public interface OrderService {
     void handlePaymentSuccess(UUID orderId);
 
     void handlePaymentFailure(UUID orderId, String reason, boolean cancelled);
+
+    void cancelExpiredPaymentOrders();
 }

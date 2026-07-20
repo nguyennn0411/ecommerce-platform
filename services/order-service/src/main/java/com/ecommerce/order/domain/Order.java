@@ -42,6 +42,9 @@ public class Order {
     @Column(name = "total_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name = "shipping_fee", nullable = false, precision = 19, scale = 2)
+    private BigDecimal shippingFee;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private OrderStatus status;
@@ -87,6 +90,7 @@ public class Order {
                  String buyerEmail,
                  String description,
                  String currency,
+                 BigDecimal shippingFee,
                  List<OrderItem> items) {
         if (userId == null) {
             throw new IllegalArgumentException("userId is required");
@@ -100,10 +104,12 @@ public class Order {
         this.buyerEmail = buyerEmail;
         this.description = description;
         this.currency = currency;
+        this.shippingFee = shippingFee == null ? BigDecimal.ZERO : shippingFee;
         this.status = OrderStatus.CREATED;
         this.totalAmount = items.stream()
                 .map(OrderItem::getLineTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(this.shippingFee);
         items.forEach(this::addItem);
     }
 
@@ -179,6 +185,10 @@ public class Order {
 
     public BigDecimal getTotalAmount() {
         return totalAmount;
+    }
+
+    public BigDecimal getShippingFee() {
+        return shippingFee;
     }
 
     public OrderStatus getStatus() {

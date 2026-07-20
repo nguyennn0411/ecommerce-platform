@@ -10,15 +10,20 @@ import com.ecommerce.order.dto.PaymentCreateResponse;
 import com.ecommerce.order.exception.OrderIntegrationException;
 import com.ecommerce.order.exception.OrderNotFoundException;
 import com.ecommerce.order.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     private final OrderRepository orderRepository;
     private final OrderSagaOrchestrator orderSagaOrchestrator;
@@ -43,6 +48,7 @@ public class OrderServiceImpl implements OrderService {
                 request.buyerEmail(),
                 normalizeDescription(request.description()),
                 normalizeCurrency(request.currency()),
+                normalizeShippingFee(request.shippingFee()),
                 request.items().stream().map(this::toOrderItem).toList()
         );
         order = orderRepository.save(order);
@@ -84,6 +90,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentSuccess(UUID orderId) {
         Order order = findOrder(orderId);
+        if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
+            log.warn("Ignoring late payment success for order {} with status {}", orderId, order.getStatus());
+            return;
+        }
         orderSagaOrchestrator.confirmInventoryFor(order);
         order.markConfirmed();
         orderRepository.save(order);
@@ -93,6 +103,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentFailure(UUID orderId, String reason, boolean cancelled) {
         Order order = findOrder(orderId);
+        if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
+            log.warn("Ignoring payment failure for order {} with status {}", orderId, order.getStatus());
+            return;
+        }
         safelyReleaseInventory(order);
         if (cancelled) {
             order.markCancelled(reason);
@@ -100,6 +114,28 @@ public class OrderServiceImpl implements OrderService {
             order.markFailed(reason);
         }
         orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void cancelExpiredPaymentOrders() {
+        LocalDateTime expiredBefore = LocalDateTime.now().minusMinutes(1);
+        List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(
+                com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING,
+                expiredBefore
+        );
+
+        for (Order order : expiredOrders) {
+            try {
+                // Only cancel after Inventory accepts the compensation, so stock is never silently lost.
+                orderSagaOrchestrator.releaseInventoryFor(order);
+                order.markCancelled("Payment was not completed within 1 minute");
+                orderRepository.save(order);
+                log.info("Cancelled expired unpaid order {} and released inventory", order.getId());
+            } catch (OrderIntegrationException exception) {
+                log.error("Could not release inventory for expired order {}; will retry", order.getId(), exception);
+            }
+        }
     }
 
     private Order findOrder(UUID orderId) {
@@ -126,6 +162,10 @@ public class OrderServiceImpl implements OrderService {
             return "Order created from order-service";
         }
         return description.trim();
+    }
+
+    private java.math.BigDecimal normalizeShippingFee(java.math.BigDecimal shippingFee) {
+        return shippingFee == null ? java.math.BigDecimal.ZERO : shippingFee;
     }
 
     private void safelyReleaseInventory(Order order) {

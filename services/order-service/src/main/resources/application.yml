@@ -42,6 +42,10 @@ product-service:
   base-url: ${PRODUCT_SERVICE_BASE_URL:http://localhost:8082}
   validation-path: ${PRODUCT_SERVICE_VALIDATION_PATH:/api/v1/products/validation}
 
+order:
+  payment-timeout:
+    check-interval-ms: ${ORDER_PAYMENT_TIMEOUT_CHECK_INTERVAL_MS:30000}
+
 eureka:
   client:
     service-url:
