@@ -21,21 +21,22 @@ public class PaymentEventListener {
         this.orderService = orderService;
     }
 
+    // Payment gửi event RabbitMQ sang Order.
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_SUCCESS_QUEUE)
     public void onPaymentSuccess(PaymentSuccessEvent event) {
-        // Payment publish payment.success; Order nhan bat dong bo va xac nhan don.
+        // Nhận payment.success -> Order xác nhận đơn và trừ kho thật.
         handle("payment.success", () -> orderService.handlePaymentSuccess(event.orderId()));
     }
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_FAILED_QUEUE)
     public void onPaymentFailed(PaymentFailedEvent event) {
-        // Payment fail -> Service goi Inventory release va doi don sang FAILED.
+        // Payment fail -> trả hàng, đơn FAILED.
         handle("payment.failed", () -> orderService.handlePaymentFailure(event.orderId(), event.reason(), false));
     }
 
     @RabbitListener(queues = RabbitMqConfig.ORDER_PAYMENT_CANCELLED_QUEUE)
     public void onPaymentCancelled(PaymentCancelledEvent event) {
-        // Khach huy tren PayOS -> tra kho va doi don sang CANCELLED.
+        // Người dùng hủy PayOS -> trả hàng, đơn CANCELLED.
         handle("payment.cancelled", () -> orderService.handlePaymentFailure(event.orderId(), event.reason(), true));
     }
 
@@ -43,7 +44,7 @@ public class PaymentEventListener {
         try {
             action.run();
         } catch (RuntimeException exception) {
-            // Log de van hanh kiem tra va xu ly lai event loi.
+            // Log để vận hành kiểm tra và xử lý lại event lỗi.
             log.error("Unable to process {}", eventName, exception);
         }
     }

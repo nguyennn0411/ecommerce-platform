@@ -14,7 +14,7 @@ public class PaymentTimeoutScheduler {
 
     @Scheduled(fixedDelayString = "${order.payment-timeout.check-interval-ms:30000}")
     public void cancelExpiredPayments() {
-        // Chay moi 30 giay de huy don pending qua han va giai phong hang da giu.
+        // Chạy mỗi 30 giây để hủy đơn pending quá hạn và giải phóng hàng đã giữ.
         orderService.cancelExpiredPaymentOrders();
     }
 }

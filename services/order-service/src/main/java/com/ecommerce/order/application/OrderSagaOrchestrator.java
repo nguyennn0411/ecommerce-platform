@@ -19,23 +19,23 @@ public class OrderSagaOrchestrator {
         this.paymentGatewayClient = paymentGatewayClient;
     }
 
+        // Bước 1: giữ hàng tạm thời; kho chưa bị trừ thật.
     public void reserveInventoryFor(Order order) {
-        // Buoc 1: giu hang tam thoi; kho chua bi tru that.
+
         inventoryGatewayClient.reserve(order);
     }
-
+    // Thanh toán thành công thì Inventory trừ kho thật.
     public void confirmInventoryFor(Order order) {
-        // Buoc 3: chi tru kho that sau khi Payment thong bao thanh cong.
         inventoryGatewayClient.confirm(order);
     }
 
+    // Thanh toán fail/hủy thì trả lượng hàng đã giữ.
     public void releaseInventoryFor(Order order) {
-        // Compensation: tra hang da giu khi payment fail, huy, hoac qua han.
         inventoryGatewayClient.release(order);
     }
 
+    // Gửi thông tin đơn sang Payment để tạo link PayOS.
     public PaymentCreateResponse createPaymentFor(Order order) {
-        // Buoc 2: Payment tao giao dich PayOS va tra ve checkout URL cho FE.
         return paymentGatewayClient.createPayment(new PaymentCreateRequest(
                 order.getId(),
                 order.getUserId(),

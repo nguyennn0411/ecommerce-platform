@@ -30,16 +30,16 @@ public class ProductGatewayClient {
     }
 
     public void validateProducts(CreateOrderRequest request) {
-        // Chuyen item FE gui thanh payload chi gom productId, gia va so luong de Product kiem tra.
+        // Chuyển item FE gửi thành payload chỉ gồm productId, giá và số lượng để Product kiểm tra.
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ProductValidationRequest> entity = new HttpEntity<>(toRequest(request), headers);
 
         try {
-            // Goi Product truoc khi tao Order; Product la nguon su that cho gia hien tai.
+            // Gọi Product trước khi tạo Order; Product là nguồn sự thật cho giá hiện tại.
             ProductValidationResponse response = restTemplate.postForObject(buildValidationUrl(), entity, ProductValidationResponse.class);
             if (response == null || !response.valid()) {
-                // Gia bi sua tren FE hoac productId khong hop le thi dung luong dat hang tai day.
+                // Giá bị sửa trên FE hoặc productId không hợp lệ thì dừng luồng đặt hàng tại đây.
                 throw new OrderIntegrationException(response == null || response.message() == null || response.message().isBlank()
                         ? "Product validation failed"
                         : response.message());
@@ -57,7 +57,7 @@ public class ProductGatewayClient {
         return new ProductValidationRequest(
                 request.items().stream()
                         .map(item -> new ProductValidationItemRequest(
-                                // Product khong can color/size de doi chieu gia catalog hien tai.
+                                // Product không cần color/size để đối chiếu giá catalog hiện tại.
                                 item.productId(),
                                 item.unitPrice(),
                                 item.quantity()
@@ -67,7 +67,7 @@ public class ProductGatewayClient {
     }
 
     private String buildValidationUrl() {
-        // Vi du: http://product-catalog-service:8082/api/v1/products/validation.
+        // Ví dụ: http://product-catalog-service:8082/api/v1/products/validation.
         return properties.getBaseUrl() + properties.getValidationPath();
     }
 
@@ -76,7 +76,7 @@ public class ProductGatewayClient {
             return fallback;
         }
         try {
-            // Lay message Product tra ve de FE hien thi dung ly do khong dat duoc don.
+            // Lấy message Product trả về để FE hiển thị đúng lý do không đặt được đơn.
             return objectMapper.readTree(body).path("message").asText(fallback);
         } catch (Exception ignored) {
             return fallback;

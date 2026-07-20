@@ -40,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(noRollbackFor = OrderIntegrationException.class)
     public OrderResponse createOrder(CreateOrderRequest request) {
-        // Product la nguon gia hien tai; khong tin gia FE gui len.
+        // Product là nguồn giá hiện tại; không tin giá FE gửi lên.
         productGatewayClient.validateProducts(request);
 
         Order order = new Order(
@@ -52,13 +52,17 @@ public class OrderServiceImpl implements OrderService {
                 normalizeShippingFee(request.shippingFee()),
                 request.items().stream().map(this::toOrderItem).toList()
         );
-        // Luu don truoc khi goi service khac de co orderId cho Inventory va Payment.
+        // Lưu đơn trước khi gọi service khác để có orderId cho Inventory và Payment.
         order = orderRepository.save(order);
 
         try {
-            // Thu tu Saga: giu hang -> tao payment -> chuyen don sang cho thanh toan.
+            // 3. Gọi Inventory giữ hàng tạm, chưa trừ kho thật
             orderSagaOrchestrator.reserveInventoryFor(order);
+
+            // 4. Gọi Payment tạo giao dịch và lấy link PayOS.
             PaymentCreateResponse payment = orderSagaOrchestrator.createPaymentFor(order);
+
+            // 5. Lưu paymentId/link vào đơn, chuyển sang chờ thanh toán.
             order.markPaymentPending(
                     payment.paymentId(),
                     payment.orderCode(),
@@ -68,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
             );
             return OrderResponse.from(orderRepository.save(order));
         } catch (OrderIntegrationException exception) {
-            // Neu mot buoc lien service loi, hoan tac phan giu hang da lam truoc do.
+            // Có lỗi ở Inventory hoặc Payment thì trả hàng đã giữ.
             safelyReleaseInventory(order);
             order.markFailed(exception.getMessage());
             orderRepository.save(order);
@@ -94,12 +98,12 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentSuccess(UUID orderId) {
         Order order = findOrder(orderId);
-        // Event co the gui lai; chi xu ly don dang pending de tranh tru kho 2 lan.
+        // Event có thể gửi lại; chỉ xử lý đơn đang pending để tránh trừ kho 2 lần.
         if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
             log.warn("Ignoring late payment success for order {} with status {}", orderId, order.getStatus());
             return;
         }
-        // Payment OK -> Inventory tru kho that -> don duoc xac nhan.
+        // Payment OK -> Inventory trừ kho thật -> đơn được xác nhận.
         orderSagaOrchestrator.confirmInventoryFor(order);
         order.markConfirmed();
         orderRepository.save(order);
@@ -109,7 +113,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void handlePaymentFailure(UUID orderId, String reason, boolean cancelled) {
         Order order = findOrder(orderId);
-        // Chi don pending moi duoc phep fail/huy va tra kho.
+        // Chỉ đơn pending mới được phép fail/hủy và trả kho.
         if (order.getStatus() != com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING) {
             log.warn("Ignoring payment failure for order {} with status {}", orderId, order.getStatus());
             return;
@@ -126,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelExpiredPaymentOrders() {
-        // Don pending qua 1 phut can tra hang de nguoi khac mua duoc.
+        // Đơn pending quá 1 phút cần trả hàng để người khác mua được.
         LocalDateTime expiredBefore = LocalDateTime.now().minusMinutes(1);
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(
                 com.ecommerce.order.domain.OrderStatus.PAYMENT_PENDING,
@@ -135,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (Order order : expiredOrders) {
             try {
-                // Chi huy DB sau khi Inventory da nhan yeu cau tra hang; neu loi se retry lan sau.
+                // Chỉ hủy DB sau khi Inventory đã nhận yêu cầu trả hàng; nếu lỗi sẽ retry lần sau.
                 orderSagaOrchestrator.releaseInventoryFor(order);
                 order.markCancelled("Payment was not completed within 1 minute");
                 orderRepository.save(order);
@@ -180,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             orderSagaOrchestrator.releaseInventoryFor(order);
         } catch (OrderIntegrationException ignored) {
-            // Don van duoc danh dau loi; van hanh sau se xu ly viec tra kho neu can.
+            // Đơn vẫn được đánh dấu lỗi; vận hành sau sẽ xử lý việc trả kho nếu cần.
         }
     }
 }
