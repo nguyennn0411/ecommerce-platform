@@ -76,6 +76,15 @@
         "attributes": {}
       },
       {
+        "id": "1be2ef69-73ce-4d54-b0a7-7eb1f9cc7dc1",
+        "name": "STAFF",
+        "description": "Staff account for order operations",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "6724ed7d-ccd2-4362-81f9-98cb91acc3ba",
+        "attributes": {}
+      },
+      {
         "id": "90ddd83b-e763-4cea-81a6-36c5f13c8dce",
         "name": "offline_access",
         "description": "${role_offline-access}",
@@ -2621,6 +2630,62 @@
       "email": "demo@stepzone.local",
       "realmRoles": [
         "CUSTOMER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "StepZone@123",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "70000000-0000-0000-0000-000000000001",
+      "username": "customer1@stepzone.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Nguyen Van",
+      "lastName": "An",
+      "email": "customer1@stepzone.local",
+      "realmRoles": [
+        "CUSTOMER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "StepZone@123",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "id": "70000000-0000-0000-0000-000000000002",
+      "username": "customer2@stepzone.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Tran Minh",
+      "lastName": "Thu",
+      "email": "customer2@stepzone.local",
+      "realmRoles": [
+        "CUSTOMER"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "StepZone@123",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "staff@stepzone.local",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "StepZone",
+      "lastName": "Staff",
+      "email": "staff@stepzone.local",
+      "realmRoles": [
+        "STAFF"
       ],
       "credentials": [
         {
