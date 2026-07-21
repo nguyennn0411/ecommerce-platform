@@ -4,6 +4,9 @@ import com.ecommerce.common.web.ApiResponse;
 import com.ecommerce.order.application.OrderService;
 import com.ecommerce.order.dto.CreateOrderRequest;
 import com.ecommerce.order.dto.OrderResponse;
+import com.ecommerce.order.dto.CancelOrderRequest;
+import com.ecommerce.order.dto.SagaTransactionLogResponse;
+import com.ecommerce.order.domain.OrderStatus;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +46,35 @@ public class OrderController {
     @GetMapping
     public ApiResponse<List<OrderResponse>> getByUser(@RequestParam("userId") UUID userId) {
         return ok(orderService.getOrdersByUser(userId), "OK");
+    }
+
+    // Customer chỉ được hủy chính đơn của mình khi PayOS vẫn đang chờ thanh toán.
+    @PostMapping("/{orderId}/cancel")
+    public ApiResponse<OrderResponse> cancel(
+            @PathVariable("orderId") UUID orderId,
+            @Valid @RequestBody CancelOrderRequest request
+    ) {
+        return ok(orderService.cancelOrder(orderId, request.userId(), request.reason()), "Order cancelled");
+    }
+
+    // Staff dùng endpoint này để xem toàn bộ đơn, có thể lọc theo trạng thái.
+    @GetMapping("/admin")
+    public ApiResponse<List<OrderResponse>> getAll(@RequestParam(value = "status", required = false) OrderStatus status) {
+        return ok(orderService.getAllOrders(status), "OK");
+    }
+
+    // Màn quản lý đơn dùng log này để hiển thị từng bước Saga và compensation.
+    @GetMapping("/{orderId}/saga-logs")
+    public ApiResponse<List<SagaTransactionLogResponse>> getSagaLogs(@PathVariable("orderId") UUID orderId) {
+        return ok(orderService.getSagaLogs(orderId), "OK");
+    }
+
+    @PostMapping("/admin/{orderId}/cancel")
+    public ApiResponse<OrderResponse> cancelByStaff(
+            @PathVariable("orderId") UUID orderId,
+            @RequestParam(value = "reason", required = false) String reason
+    ) {
+        return ok(orderService.cancelOrderByStaff(orderId, reason), "Order cancelled by staff");
     }
 
     // Tất cả endpoint trả về cùng một response wrapper để FE xử lý đồng nhất.

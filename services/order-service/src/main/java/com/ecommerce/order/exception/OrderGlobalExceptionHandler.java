@@ -23,4 +23,10 @@ public class OrderGlobalExceptionHandler {
     public ApiResponse<Void> handleOrderIntegration(OrderIntegrationException exception) {
         return ApiResponse.error(exception.getMessage());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleInvalidOrderState(IllegalStateException exception) {
+        return ApiResponse.error(exception.getMessage());
+    }
 }

@@ -13,4 +13,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByUserIdOrderByCreatedAtDesc(UUID userId);
     // Timeout: lấy đơn còn PAYMENT_PENDING và tạo trước mốc thời gian.
     List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime createdAt);
+
+    List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
 }
