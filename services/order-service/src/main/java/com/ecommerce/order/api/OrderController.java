@@ -77,6 +77,27 @@ public class OrderController {
         return ok(orderService.cancelOrderByStaff(orderId, reason), "Order cancelled by staff");
     }
 
+    // Staff chốt đơn đã thanh toán sau khi đối soát tiền cuối ngày.
+    @PostMapping("/admin/{orderId}/complete")
+    public ApiResponse<OrderResponse> completeByStaff(@PathVariable("orderId") UUID orderId) {
+        return ok(orderService.completeOrderByStaff(orderId), "Order completed by staff");
+    }
+
+    // Staff chuyển đơn đã thanh toán sang trạng thái đang giao.
+    @PostMapping("/admin/{orderId}/ship")
+    public ApiResponse<OrderResponse> shipByStaff(@PathVariable("orderId") UUID orderId) {
+        return ok(orderService.markShippingByStaff(orderId), "Order moved to shipping");
+    }
+
+    // Staff đánh dấu đơn đang giao bị hoàn về cửa hàng.
+    @PostMapping("/admin/{orderId}/return")
+    public ApiResponse<OrderResponse> returnByStaff(
+            @PathVariable("orderId") UUID orderId,
+            @RequestParam(value = "reason", required = false) String reason
+    ) {
+        return ok(orderService.returnOrderByStaff(orderId, reason), "Order returned by staff");
+    }
+
     // Tất cả endpoint trả về cùng một response wrapper để FE xử lý đồng nhất.
     private <T> ApiResponse<T> ok(T data, String message) {
         return new ApiResponse<>(true, data, message, Instant.now());

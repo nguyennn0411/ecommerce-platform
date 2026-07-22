@@ -146,6 +146,49 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public OrderResponse completeOrderByStaff(UUID orderId) {
+        Order order = findOrder(orderId);
+        if (order.getStatus() != OrderStatus.SHIPPING) {
+            throw new IllegalStateException("Only shipping orders can be completed");
+        }
+        order.markCompleted();
+        order = orderRepository.save(order);
+        sagaLogService.write(order.getId(), "ORDER_COMPLETED", SagaLogStatus.SUCCESS, "Staff completed order after delivery confirmation");
+        notificationPublisher.publish(order, "completed", "Đơn hàng đã được nhân viên chốt hoàn thành");
+        return OrderResponse.from(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse markShippingByStaff(UUID orderId) {
+        Order order = findOrder(orderId);
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
+            throw new IllegalStateException("Only paid orders can be moved to shipping");
+        }
+        order.markShipping();
+        order = orderRepository.save(order);
+        sagaLogService.write(order.getId(), "ORDER_SHIPPING", SagaLogStatus.SUCCESS, "Staff handed order to shipping");
+        notificationPublisher.publish(order, "shipping", "Đơn hàng đang được giao");
+        return OrderResponse.from(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse returnOrderByStaff(UUID orderId, String reason) {
+        Order order = findOrder(orderId);
+        if (order.getStatus() != OrderStatus.SHIPPING) {
+            throw new IllegalStateException("Only shipping orders can be returned");
+        }
+        String normalizedReason = reason == null || reason.isBlank() ? "Returned after failed delivery" : reason.trim();
+        order.markReturned(normalizedReason);
+        order = orderRepository.save(order);
+        sagaLogService.write(order.getId(), "ORDER_RETURNED", SagaLogStatus.COMPENSATED, normalizedReason);
+        notificationPublisher.publish(order, "returned", "Đơn hàng giao không thành công và đã hoàn về");
+        return OrderResponse.from(order);
+    }
+
+    @Override
+    @Transactional
     public void handlePaymentSuccess(UUID orderId) {
         Order order = findOrder(orderId);
         // Event có thể gửi lại; chỉ xử lý đơn đang pending để tránh trừ kho 2 lần.

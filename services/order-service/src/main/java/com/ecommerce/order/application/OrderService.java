@@ -24,6 +24,12 @@ public interface OrderService {
 
     OrderResponse cancelOrderByStaff(UUID orderId, String reason);
 
+    OrderResponse completeOrderByStaff(UUID orderId);
+
+    OrderResponse markShippingByStaff(UUID orderId);
+
+    OrderResponse returnOrderByStaff(UUID orderId, String reason);
+
     void handlePaymentSuccess(UUID orderId);
 
     void handlePaymentFailure(UUID orderId, String reason, boolean cancelled);

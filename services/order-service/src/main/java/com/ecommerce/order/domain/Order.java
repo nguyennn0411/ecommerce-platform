@@ -139,6 +139,27 @@ public class Order {
         this.paidAt = LocalDateTime.now();
     }
 
+    // Nhân viên đã đối soát cuối ngày và chốt đơn hoàn thành.
+    public void markCompleted() {
+        this.status = OrderStatus.COMPLETED;
+        this.failureReason = null;
+        this.cancelledAt = null;
+    }
+
+    // Nhân viên đã bàn giao đơn cho khâu vận chuyển.
+    public void markShipping() {
+        this.status = OrderStatus.SHIPPING;
+        this.failureReason = null;
+        this.cancelledAt = null;
+    }
+
+    // Đơn giao không thành công và hoàn về cửa hàng.
+    public void markReturned(String reason) {
+        this.status = OrderStatus.RETURNED;
+        this.failureReason = reason;
+        this.cancelledAt = null;
+    }
+
     // Payment lỗi hoặc người dùng không trả tiền kịp.
     public void markFailed(String reason) {
         this.status = OrderStatus.FAILED;
