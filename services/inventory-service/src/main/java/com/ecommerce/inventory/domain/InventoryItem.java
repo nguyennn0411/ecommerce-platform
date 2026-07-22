@@ -79,6 +79,36 @@ public class InventoryItem {
         reservedQuantity -= amount;
     }
 
+    /**
+     * Admin/catalog set stock to an absolute quantity (not incremental).
+     * Must not go below reservedQuantity (DB check + open reservations).
+     */
+    public void setAbsoluteQuantity(int newQuantity) {
+        if (newQuantity < 0) {
+            throw new IllegalArgumentException("quantity must be >= 0");
+        }
+        if (newQuantity < reservedQuantity) {
+            throw new IllegalArgumentException(
+                    "Cannot set quantity=%d because reservedQuantity=%d"
+                            .formatted(newQuantity, reservedQuantity)
+            );
+        }
+        this.quantity = newQuantity;
+        this.status = getAvailableQuantity() > 0
+                ? InventoryItemStatus.IN_STOCK
+                : InventoryItemStatus.OUT_OF_STOCK;
+    }
+
+    public static InventoryItem createNew(UUID productId, String size, String color, int quantity) {
+        InventoryItem item = new InventoryItem();
+        item.productId = productId;
+        item.size = size;
+        item.color = color;
+        item.reservedQuantity = 0;
+        item.setAbsoluteQuantity(quantity);
+        return item;
+    }
+
     public UUID getId() {
         return id;
     }
