@@ -12,6 +12,7 @@ import com.ecommerce.notification.dto.SendEmailRequest;
 import com.ecommerce.notification.entity.Notification;
 import com.ecommerce.notification.enums.NotificationChannel;
 import com.ecommerce.notification.exception.NotificationNotFoundException;
+import com.ecommerce.notification.messaging.OrderNotificationEvent;
 import com.ecommerce.notification.repository.NotificationRepository;
 import com.ecommerce.notification.service.EmailSender;
 import com.ecommerce.notification.service.NotificationService;
@@ -23,6 +24,7 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -186,6 +188,46 @@ public class NotificationServiceImpl implements NotificationService {
         sendEmail(event.userId(), event.orderId(), event.buyerEmail(), subject, body, true);
     }
 
+    @Override
+    @Transactional
+    public void sendOrderNotification(OrderNotificationEvent event) {
+        if (!hasText(event.recipientEmail())) {
+            return;
+        }
+
+        String eventType = normalizeOrderEventType(event.eventType());
+        String subject;
+        String title;
+        String defaultMessage;
+
+        switch (eventType) {
+            case "CREATED" -> {
+                subject = "Order created - " + event.orderId();
+                title = "Order created";
+                defaultMessage = "Your order has been created and is waiting for payment.";
+            }
+            case "CONFIRMED" -> {
+                subject = "Order confirmed - " + event.orderId();
+                title = "Order confirmed";
+                defaultMessage = "Payment was successful and your order has been confirmed.";
+            }
+            case "FAILED" -> {
+                subject = "Order failed - " + event.orderId();
+                title = "Order failed";
+                defaultMessage = "We could not complete your order.";
+            }
+            case "CANCELLED" -> {
+                subject = "Order cancelled - " + event.orderId();
+                title = "Order cancelled";
+                defaultMessage = "Your order has been cancelled.";
+            }
+            default -> throw new IllegalArgumentException("Unsupported order event type: " + event.eventType());
+        }
+
+        String body = orderStatusBody(event, title, defaultMessage);
+        sendEmail(event.userId(), event.orderId(), event.recipientEmail(), subject, body, true);
+    }
+
     private Notification sendEmail(UUID userId,
                                    UUID orderId,
                                    String recipient,
@@ -267,6 +309,27 @@ public class NotificationServiceImpl implements NotificationService {
                         detailLine
                 )
         );
+    }
+
+    private String orderStatusBody(OrderNotificationEvent event, String title, String defaultMessage) {
+        String detail = hasText(event.message()) ? event.message() : defaultMessage;
+        return htmlShell(
+                title,
+                """
+                <p>%s</p>
+                <p>Order ID: <strong>%s</strong></p>
+                <p>Status: <strong>%s</strong></p>
+                """.formatted(
+                        escape(detail),
+                        escape(String.valueOf(event.orderId())),
+                        escape(firstText(event.orderStatus(), "N/A"))
+                )
+        );
+    }
+
+    private String normalizeOrderEventType(String eventType) {
+        String normalized = firstText(eventType, "").trim().toUpperCase(Locale.ROOT);
+        return normalized.startsWith("ORDER_") ? normalized.substring("ORDER_".length()) : normalized;
     }
 
     private String detailTable(BigDecimal amount, String currency, String paymentLinkId, String provider) {

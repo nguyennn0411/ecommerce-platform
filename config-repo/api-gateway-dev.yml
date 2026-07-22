@@ -14,7 +14,7 @@ spring:
         - id: product-catalog-service
           uri: lb://product-catalog-service
           predicates:
-            - Path=/api/v1/products/**
+            - Path=/api/v1/products/**,/api/v1/categories/**
         - id: inventory-service
           uri: lb://inventory-service
           predicates:
@@ -26,7 +26,14 @@ spring:
         - id: payment-service
           uri: lb://payment-service
           predicates:
-            - Path=/api/v1/payments/**,/api/payments/**
+            - Path=/api/payments/**
+        - id: payment-service-v1
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**
+          filters:
+            - StripPrefix=2
+            - PrefixPath=/api
         - id: notification-service
           uri: lb://notification-service
           predicates:

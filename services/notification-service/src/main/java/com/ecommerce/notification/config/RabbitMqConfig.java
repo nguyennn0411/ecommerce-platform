@@ -25,12 +25,14 @@ public class RabbitMqConfig {
     public static final String PAYMENT_FAILED_QUEUE = "notification.payment.failed";
     public static final String PAYMENT_CANCELLED_QUEUE = "notification.payment.cancelled";
     public static final String PAYMENT_REFUNDED_QUEUE = "notification.payment.refunded";
+    public static final String ORDER_NOTIFICATION_QUEUE = "notification.order.events";
 
     public static final String PAYMENT_CREATED_ROUTING_KEY = "payment.created";
     public static final String PAYMENT_SUCCESS_ROUTING_KEY = "payment.success";
     public static final String PAYMENT_FAILED_ROUTING_KEY = "payment.failed";
     public static final String PAYMENT_CANCELLED_ROUTING_KEY = "payment.cancelled";
     public static final String PAYMENT_REFUNDED_ROUTING_KEY = "payment.refunded";
+    public static final String ORDER_NOTIFICATION_ROUTING_PATTERN = "order.#";
 
     @Bean
     public TopicExchange ecommerceExchange() {
@@ -78,6 +80,11 @@ public class RabbitMqConfig {
     }
 
     @Bean
+    public Queue orderNotificationQueue() {
+        return QueueBuilder.durable(ORDER_NOTIFICATION_QUEUE).build();
+    }
+
+    @Bean
     public Binding paymentCreatedBinding(@Qualifier("paymentCreatedQueue") Queue queue,
                                          @Qualifier("ecommerceExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(PAYMENT_CREATED_ROUTING_KEY);
@@ -105,5 +112,11 @@ public class RabbitMqConfig {
     public Binding paymentRefundedBinding(@Qualifier("paymentRefundedQueue") Queue queue,
                                           @Qualifier("ecommerceExchange") TopicExchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with(PAYMENT_REFUNDED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding orderNotificationBinding(@Qualifier("orderNotificationQueue") Queue queue,
+                                            @Qualifier("ecommerceExchange") TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ORDER_NOTIFICATION_ROUTING_PATTERN);
     }
 }

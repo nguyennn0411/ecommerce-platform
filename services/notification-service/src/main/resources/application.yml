@@ -35,10 +35,10 @@ spring:
     properties:
       mail:
         smtp:
-          auth: true
+          auth: ${MAIL_SMTP_AUTH:true}
           starttls:
-            enable: true
-            required: true
+            enable: ${MAIL_STARTTLS_ENABLED:true}
+            required: ${MAIL_STARTTLS_REQUIRED:true}
           ssl:
             trust: ${MAIL_SSL_TRUST:smtp.gmail.com}
 

@@ -26,17 +26,22 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
-    public ApiResponse<PaymentResponse> getById(@PathVariable UUID paymentId) {
+    public ApiResponse<PaymentResponse> getById(@PathVariable("paymentId") UUID paymentId) {
         return ok(paymentService.getPaymentById(paymentId));
     }
 
     @GetMapping("/orders/{orderId}")
-    public ApiResponse<PaymentResponse> getByOrderId(@PathVariable UUID orderId) {
+    public ApiResponse<PaymentResponse> getByOrderId(@PathVariable("orderId") UUID orderId) {
         return ok(paymentService.getPaymentByOrderId(orderId));
     }
 
+    @PostMapping("/orders/{orderId}/sync")
+    public ApiResponse<PaymentResponse> syncByOrderId(@PathVariable("orderId") UUID orderId) {
+        return ok(paymentService.syncPaymentByOrderId(orderId));
+    }
+
     @PostMapping("/{paymentId}/cancel")
-    public ApiResponse<PaymentResponse> cancel(@PathVariable UUID paymentId,
+    public ApiResponse<PaymentResponse> cancel(@PathVariable("paymentId") UUID paymentId,
                                                @Valid @RequestBody(required = false) CancelPaymentRequest request) {
         return ok(paymentService.cancelPayment(paymentId, request));
     }

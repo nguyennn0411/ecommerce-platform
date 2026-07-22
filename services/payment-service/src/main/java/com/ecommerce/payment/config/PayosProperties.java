@@ -26,6 +26,11 @@ public class PayosProperties {
     @NotBlank
     private String webhookUrl;
 
+    private boolean autoConfirmWebhook = true;
+
+    @NotBlank
+    private String logLevel = "NONE";
+
     public boolean hasCredentials() {
         return hasText(clientId) && hasText(apiKey) && hasText(checksumKey);
     }
@@ -88,5 +93,21 @@ public class PayosProperties {
 
     public void setWebhookUrl(String webhookUrl) {
         this.webhookUrl = webhookUrl;
+    }
+
+    public boolean isAutoConfirmWebhook() {
+        return autoConfirmWebhook;
+    }
+
+    public void setAutoConfirmWebhook(boolean autoConfirmWebhook) {
+        this.autoConfirmWebhook = autoConfirmWebhook;
+    }
+
+    public String getLogLevel() {
+        return logLevel;
+    }
+
+    public void setLogLevel(String logLevel) {
+        this.logLevel = logLevel;
     }
 }

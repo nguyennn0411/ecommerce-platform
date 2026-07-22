@@ -1,5 +1,6 @@
 package com.ecommerce.payment.service.impl;
 
+import com.ecommerce.payment.dto.ConfirmPayosWebhookResponse;
 import com.ecommerce.payment.dto.PayosCreatePaymentRequest;
 import com.ecommerce.payment.dto.PayosCreatePaymentResponse;
 import com.ecommerce.payment.dto.PayosWebhookRequest;
@@ -34,5 +35,10 @@ public class PayosPaymentServiceImpl implements PayosPaymentService {
     @Override
     public boolean verifyWebhookSignature(PayosWebhookRequest request) {
         return paymentGatewayClient.verifyWebhookSignature(request);
+    }
+
+    @Override
+    public ConfirmPayosWebhookResponse confirmWebhook(String webhookUrl) {
+        return paymentGatewayClient.confirmWebhook(webhookUrl);
     }
 }

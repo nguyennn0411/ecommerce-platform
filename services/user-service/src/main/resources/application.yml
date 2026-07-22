@@ -5,12 +5,9 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://ecommerce-postgres:5432/ecommerce_user_service
-    username: ecommerce
-    password: ecommerce
-#    url: jdbc:postgresql://localhost:5432/ecommerce_user_service
-#    username: postgres
-#    password: 123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ecommerce_user_service}
+    username: ${SPRING_DATASOURCE_USERNAME:ecommerce}
+    password: ${SPRING_DATASOURCE_PASSWORD:ecommerce}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

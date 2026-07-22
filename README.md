@@ -50,6 +50,18 @@ cd services/user-service
 mvn spring-boot:run
 ```
 
+## PayOS webhook for local development
+
+PayOS must call a public HTTPS URL; a return URL alone cannot confirm a transfer. Start a tunnel to the API Gateway and set the URL before starting payment-service:
+
+```bash
+ngrok http 8080
+set PAYOS_WEBHOOK_URL=https://<your-ngrok-domain>.ngrok-free.app/api/payments/payos/webhook
+set PAYOS_AUTO_CONFIRM_WEBHOOK=true
+```
+
+payment-service confirms this URL with PayOS at startup. The Gateway accepts both `/api/payments/**` and `/api/v1/payments/**`; use the first path for PayOS callbacks.
+
 ## Smoke tests
 
 ```bash

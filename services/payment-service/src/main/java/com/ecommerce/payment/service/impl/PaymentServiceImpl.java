@@ -28,6 +28,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -149,8 +151,15 @@ public class PaymentServiceImpl implements PaymentService {
         if (data.orderCode() == null) {
             throw new IllegalArgumentException("Webhook orderCode is required");
         }
-        Payment payment = paymentRepository.findByOrderCodeForUpdate(data.orderCode())
-                .orElseThrow(() -> PaymentNotFoundException.byOrderCode(data.orderCode()));
+        Payment payment = paymentRepository.findByOrderCodeForUpdate(data.orderCode()).orElse(null);
+        if (payment == null) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("received", true);
+            response.put("orderCode", data.orderCode());
+            response.put("status", "IGNORED");
+            response.put("message", "Webhook acknowledged for an unknown payment");
+            return response;
+        }
 
         validateWebhookPayload(payment, data);
 
@@ -235,6 +244,43 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
+    public PaymentResponse syncPaymentByOrderId(UUID orderId) {
+        Payment payment = paymentRepository.findByOrderIdForUpdate(orderId)
+                .orElseThrow(() -> PaymentNotFoundException.byOrderId(orderId));
+        if (!payment.isPending()) {
+            return PaymentResponse.from(payment);
+        }
+
+        requirePayosCredentials();
+        PayosCreatePaymentResponse providerResponse = payosPaymentService.getPaymentStatus(payment.getOrderCode());
+        if (providerResponse == null || providerResponse.data() == null || !isSuccessCode(providerResponse.code())) {
+            throw new GatewayException(resolveGatewayReason(providerResponse, "Unable to reconcile payment status with PayOS"));
+        }
+
+        PayosPaymentLinkData providerPayment = providerResponse.data();
+        validateProviderPayment(payment, providerPayment);
+        applyCheckoutInfo(payment, providerPayment);
+
+        String providerStatus = Objects.toString(providerPayment.status(), "").trim().toUpperCase(Locale.ROOT);
+        String providerReference = Objects.toString(providerPayment.reference(), payment.getPaymentLinkId());
+        if ("PAID".equals(providerStatus)) {
+            payment.markSuccess();
+            paymentTransactionService.record(payment, TransactionType.PAYMENT, PaymentStatus.SUCCESS,
+                    providerReference, toJson(providerResponse));
+            paymentEventPublisher.publishPaymentSuccess(payment, providerReference);
+        } else if (providerStatus.contains("CANCEL")) {
+            String reason = resolveReason(providerPayment.cancellationReason(), providerPayment.desc(), "Cancelled by PayOS");
+            payment.markCancelled(reason);
+            paymentTransactionService.record(payment, TransactionType.CANCEL, PaymentStatus.CANCELLED,
+                    providerReference, toJson(providerResponse));
+            paymentEventPublisher.publishPaymentCancelled(payment, reason);
+        }
+
+        return PaymentResponse.from(payment);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentById(UUID paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
@@ -284,12 +330,14 @@ public class PaymentServiceImpl implements PaymentService {
                                                           Payment payment,
                                                           String description) {
         long amount = toWholeAmount(request.amount());
+        String cancelUrl = appendOrderId(payosProperties.getCancelUrl(), payment.getOrderId());
+        String returnUrl = appendOrderId(payosProperties.getReturnUrl(), payment.getOrderId());
         String signature = signatureUtil.generatePaymentRequestSignature(
                 amount,
-                payosProperties.getCancelUrl(),
+                cancelUrl,
                 description,
                 payment.getOrderCode(),
-                payosProperties.getReturnUrl(),
+                returnUrl,
                 payosProperties.getChecksumKey()
         );
         return new PayosCreatePaymentRequest(
@@ -300,10 +348,15 @@ public class PaymentServiceImpl implements PaymentService {
                 emptyToNull(request.buyerEmail()),
                 emptyToNull(request.buyerPhone()),
                 emptyToNull(request.buyerAddress()),
-                payosProperties.getCancelUrl(),
-                payosProperties.getReturnUrl(),
+                cancelUrl,
+                returnUrl,
                 signature
         );
+    }
+
+    private String appendOrderId(String baseUrl, UUID orderId) {
+        String separator = baseUrl.contains("?") ? "&" : "?";
+        return baseUrl + separator + "orderId=" + URLEncoder.encode(orderId.toString(), StandardCharsets.UTF_8);
     }
 
     private CreatePayosPaymentResponse toCreateResponse(Payment payment,
@@ -358,6 +411,19 @@ public class PaymentServiceImpl implements PaymentService {
         }
         if (data.paymentLinkId() != null
                 && payment.getPaymentLinkId() != null
+                && !Objects.equals(payment.getPaymentLinkId(), data.paymentLinkId())) {
+            throw new GatewayException("PayOS paymentLinkId does not match payment");
+        }
+    }
+
+    private void validateProviderPayment(Payment payment, PayosPaymentLinkData data) {
+        if (data.orderCode() != null && !Objects.equals(payment.getOrderCode(), data.orderCode())) {
+            throw new GatewayException("PayOS orderCode does not match payment");
+        }
+        if (data.amount() != null && !Objects.equals(toWholeAmount(payment.getAmount()), data.amount())) {
+            throw new GatewayException("PayOS amount does not match payment amount");
+        }
+        if (data.paymentLinkId() != null && payment.getPaymentLinkId() != null
                 && !Objects.equals(payment.getPaymentLinkId(), data.paymentLinkId())) {
             throw new GatewayException("PayOS paymentLinkId does not match payment");
         }

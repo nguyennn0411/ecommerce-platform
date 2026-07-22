@@ -8,6 +8,7 @@ import com.ecommerce.common.events.PaymentSuccessEvent;
 import com.ecommerce.notification.dto.MailConfigurationResponse;
 import com.ecommerce.notification.dto.NotificationResponse;
 import com.ecommerce.notification.dto.SendEmailRequest;
+import com.ecommerce.notification.messaging.OrderNotificationEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,4 +34,6 @@ public interface NotificationService {
     void sendPaymentCancelled(PaymentCancelledEvent event);
 
     void sendPaymentRefunded(PaymentRefundedEvent event);
+
+    void sendOrderNotification(OrderNotificationEvent event);
 }
