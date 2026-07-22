@@ -20,6 +20,7 @@ import com.ecommerce.productcatalog.domain.ProductVariant;
 import com.ecommerce.productcatalog.persistence.CategoryRepository;
 import com.ecommerce.productcatalog.persistence.ProductRepository;
 import com.ecommerce.productcatalog.persistence.ProductSpecifications;
+import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +35,16 @@ public class ProductCatalogUseCase {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final EntityManager entityManager;
 
-    public ProductCatalogUseCase(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductCatalogUseCase(
+            ProductRepository productRepository,
+            CategoryRepository categoryRepository,
+            EntityManager entityManager
+    ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.entityManager = entityManager;
     }
 
     @Transactional
@@ -191,7 +198,9 @@ public class ProductCatalogUseCase {
     }
 
     private void replaceVariants(Product product, List<ProductVariantRequest> requests) {
+        // Clear + flush so DELETEs hit DB before INSERTs (avoids unique constraint on size/color).
         product.clearVariants();
+        entityManager.flush();
         if (requests == null) {
             return;
         }
@@ -206,6 +215,7 @@ public class ProductCatalogUseCase {
 
     private void replaceImages(Product product, List<ProductImageRequest> requests) {
         product.clearImages();
+        entityManager.flush();
         if (requests == null) {
             return;
         }

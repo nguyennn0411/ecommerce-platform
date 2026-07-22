@@ -70,7 +70,7 @@ public class Product {
     }
 
     public void clearVariants() {
-        variants.forEach(variant -> variant.setProduct(null));
+        // orphanRemoval=true deletes rows; keep association until clear so Hibernate schedules DELETEs.
         variants.clear();
     }
 
@@ -80,7 +80,6 @@ public class Product {
     }
 
     public void clearImages() {
-        images.forEach(image -> image.setProduct(null));
         images.clear();
     }
 
