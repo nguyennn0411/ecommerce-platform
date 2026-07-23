@@ -37,6 +37,7 @@ public class SagaTransactionLog {
     protected SagaTransactionLog() {
     }
 
+    // Tạo bản ghi log cho một bước Saga của order.
     public SagaTransactionLog(UUID orderId, String step, SagaLogStatus status, String message) {
         this.id = UUID.randomUUID();
         this.orderId = orderId;
@@ -45,6 +46,7 @@ public class SagaTransactionLog {
         this.message = message;
     }
 
+    // Tự set thời gian tạo log trước khi insert vào DB.
     @PrePersist
     void onCreate() {
         this.createdAt = LocalDateTime.now();

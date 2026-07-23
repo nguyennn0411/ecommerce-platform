@@ -47,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
         this.notificationPublisher = notificationPublisher;
     }
 
+    // Tạo đơn mới: kiểm tra Product, giữ hàng Inventory, tạo Payment và trả link PayOS cho FE.
     @Override
     @Transactional(noRollbackFor = OrderIntegrationException.class)
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -98,12 +99,14 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // Lấy chi tiết một đơn theo orderId để FE hoặc staff đọc trạng thái hiện tại.
     @Override
     @Transactional(readOnly = true)
     public OrderResponse getOrder(UUID orderId) {
         return OrderResponse.from(findOrder(orderId));
     }
 
+    // Lấy lịch sử đơn của một user, dùng cho màn My Orders.
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrdersByUser(UUID userId) {
@@ -112,6 +115,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    // Lấy danh sách đơn cho staff, có thể lọc theo trạng thái nếu truyền status.
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders(OrderStatus status) {
@@ -121,6 +125,7 @@ public class OrderServiceImpl implements OrderService {
         return orders.stream().map(OrderResponse::from).toList();
     }
 
+    // Lấy các bước Saga đã ghi lại để hiển thị quá trình xử lý đơn.
     @Override
     @Transactional(readOnly = true)
     public List<SagaTransactionLogResponse> getSagaLogs(UUID orderId) {
@@ -128,6 +133,7 @@ public class OrderServiceImpl implements OrderService {
         return sagaLogService.findByOrderId(orderId);
     }
 
+    // Customer hủy đơn của chính mình khi đơn vẫn đang chờ thanh toán.
     @Override
     @Transactional
     public OrderResponse cancelOrder(UUID orderId, UUID userId, String reason) {
@@ -138,12 +144,14 @@ public class OrderServiceImpl implements OrderService {
         return cancelPendingOrder(order, reason == null || reason.isBlank() ? "Cancelled by customer" : reason.trim());
     }
 
+    // Staff hủy đơn đang chờ thanh toán thay cho khách hoặc khi cần xử lý vận hành.
     @Override
     @Transactional
     public OrderResponse cancelOrderByStaff(UUID orderId, String reason) {
         return cancelPendingOrder(findOrder(orderId), reason == null || reason.isBlank() ? "Cancelled by staff" : reason.trim());
     }
 
+    // Staff chốt đơn hoàn thành sau khi đơn đang giao đã giao thành công.
     @Override
     @Transactional
     public OrderResponse completeOrderByStaff(UUID orderId) {
@@ -158,6 +166,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponse.from(order);
     }
 
+    // Staff chuyển đơn đã thanh toán sang trạng thái đang giao.
     @Override
     @Transactional
     public OrderResponse markShippingByStaff(UUID orderId) {
@@ -172,6 +181,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponse.from(order);
     }
 
+    // Staff đánh dấu đơn đang giao bị hoàn về cửa hàng.
     @Override
     @Transactional
     public OrderResponse returnOrderByStaff(UUID orderId, String reason) {
@@ -187,6 +197,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponse.from(order);
     }
 
+    // Nhận payment.success từ RabbitMQ, xác nhận kho đã trừ hàng và chuyển đơn sang CONFIRMED.
     @Override
     @Transactional
     public void handlePaymentSuccess(UUID orderId) {
@@ -206,6 +217,7 @@ public class OrderServiceImpl implements OrderService {
         notificationPublisher.publish(order, "confirmed", "Thanh toán thành công, đơn hàng đã được xác nhận");
     }
 
+    // Nhận payment.failed hoặc payment.cancelled từ RabbitMQ, trả hàng đã giữ và đóng đơn.
     @Override
     @Transactional
     public void handlePaymentFailure(UUID orderId, String reason, boolean cancelled) {
@@ -226,6 +238,7 @@ public class OrderServiceImpl implements OrderService {
         notificationPublisher.publish(order, cancelled ? "cancelled" : "failed", order.getFailureReason());
     }
 
+    // Tự hủy các đơn chờ thanh toán quá hạn để giải phóng hàng đã giữ trong Inventory.
     @Override
     @Transactional
     public void cancelExpiredPaymentOrders() {
@@ -251,10 +264,12 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // Tìm Order trong DB; nếu không có thì ném lỗi 404 qua GlobalExceptionHandler.
     private Order findOrder(UUID orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new OrderNotFoundException(orderId));
     }
 
+    // Chuyển item request từ FE sang entity OrderItem để lưu vào DB.
     private OrderItem toOrderItem(CreateOrderItemRequest request) {
         return new OrderItem(
                 request.productId(),
@@ -266,10 +281,12 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    // Chuẩn hóa tiền tệ; mặc định là VND nếu FE không gửi.
     private String normalizeCurrency(String currency) {
         return currency == null || currency.isBlank() ? "VND" : currency.toUpperCase(Locale.ROOT);
     }
 
+    // Chuẩn hóa mô tả đơn để Payment luôn có nội dung giao dịch.
     private String normalizeDescription(String description) {
         if (description == null || description.isBlank()) {
             return "Order created from order-service";
@@ -277,10 +294,12 @@ public class OrderServiceImpl implements OrderService {
         return description.trim();
     }
 
+    // Chuẩn hóa phí ship; nếu FE không gửi thì mặc định bằng 0.
     private java.math.BigDecimal normalizeShippingFee(java.math.BigDecimal shippingFee) {
         return shippingFee == null ? java.math.BigDecimal.ZERO : shippingFee;
     }
 
+    // Cố gắng trả hàng đã giữ; lỗi trả hàng chỉ ghi log Saga để tránh mất trạng thái đơn.
     private void safelyReleaseInventory(Order order) {
         try {
             orderSagaOrchestrator.releaseInventoryFor(order);
@@ -291,6 +310,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // Hủy một đơn đang PAYMENT_PENDING và trả hàng đã giữ trong Inventory.
     private OrderResponse cancelPendingOrder(Order order, String reason) {
         if (order.getStatus() != OrderStatus.PAYMENT_PENDING) {
             throw new IllegalStateException("Only pending payment orders can be cancelled");

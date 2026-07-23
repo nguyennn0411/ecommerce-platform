@@ -46,6 +46,7 @@ public class OrderItem {
     protected OrderItem() {
     }
 
+    // Tạo dòng sản phẩm trong đơn và tính lineTotal = unitPrice * quantity.
     public OrderItem(UUID productId, String productName, String size, String color, int quantity, BigDecimal unitPrice) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Item quantity must be greater than 0");
@@ -66,6 +67,7 @@ public class OrderItem {
         this.lineTotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
 
+    // Gắn item vào Order cha để JPA lưu đúng khóa ngoại order_id.
     void attachTo(Order order) {
         this.order = order;
     }

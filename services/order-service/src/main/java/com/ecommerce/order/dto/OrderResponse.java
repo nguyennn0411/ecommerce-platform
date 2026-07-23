@@ -30,6 +30,7 @@ public record OrderResponse(
         LocalDateTime updatedAt,
         List<OrderItemResponse> items
 ) {
+    // Map entity Order sang response trả cho FE, gồm trạng thái, payment link và danh sách item.
     public static OrderResponse from(Order order) {
         return new OrderResponse(
                 order.getId(),

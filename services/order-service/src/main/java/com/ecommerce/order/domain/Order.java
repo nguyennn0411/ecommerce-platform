@@ -85,6 +85,7 @@ public class Order {
     protected Order() {
     }
 
+    // Khởi tạo đơn mới từ request đặt hàng; entity tự tính tổng tiền và set trạng thái CREATED.
     public Order(UUID userId,
                  String buyerName,
                  String buyerEmail,
@@ -115,11 +116,13 @@ public class Order {
         items.forEach(this::addItem);
     }
 
+    // Gắn item vào Order để JPA lưu quan hệ orders -> order_items.
     private void addItem(OrderItem item) {
         item.attachTo(this);
         this.items.add(item);
     }
 
+    // Lưu thông tin Payment trả về và chuyển đơn sang trạng thái chờ thanh toán.
     public void markPaymentPending(UUID paymentId, Long paymentOrderCode, String paymentLinkId, String checkoutUrl, String qrCode) {
         this.paymentId = paymentId;
         this.paymentOrderCode = paymentOrderCode;
@@ -179,6 +182,7 @@ public class Order {
         this.updatedAt = now;
     }
 
+    // Cập nhật updatedAt mỗi lần Order thay đổi trạng thái hoặc thông tin thanh toán.
     @PreUpdate
     void onUpdate() {
         this.updatedAt = LocalDateTime.now();

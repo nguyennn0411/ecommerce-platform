@@ -15,6 +15,7 @@ public record OrderItemResponse(
         BigDecimal unitPrice,
         BigDecimal lineTotal
 ) {
+    // Map entity OrderItem sang response để FE hiển thị từng sản phẩm trong đơn.
     public static OrderItemResponse from(OrderItem item) {
         return new OrderItemResponse(
                 item.getId(),

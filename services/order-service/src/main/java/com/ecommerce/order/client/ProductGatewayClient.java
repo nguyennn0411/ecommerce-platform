@@ -29,6 +29,7 @@ public class ProductGatewayClient {
         this.properties = properties;
     }
 
+    // Gọi Product Service để kiểm tra productId, giá hiện tại và số lượng trước khi tạo đơn.
     public void validateProducts(CreateOrderRequest request) {
         // Chuyển item FE gửi thành payload chỉ gồm productId, giá và số lượng để Product kiểm tra.
         HttpHeaders headers = new HttpHeaders();
@@ -53,6 +54,7 @@ public class ProductGatewayClient {
         }
     }
 
+    // Tạo payload validation; Order chỉ cần Product xác nhận danh sách item có hợp lệ không.
     private ProductValidationRequest toRequest(CreateOrderRequest request) {
         return new ProductValidationRequest(
                 request.items().stream()
@@ -66,11 +68,13 @@ public class ProductGatewayClient {
         );
     }
 
+    // Ghép base URL và path validation lấy từ application.yml.
     private String buildValidationUrl() {
         // Ví dụ: http://product-catalog-service:8082/api/v1/products/validation.
         return properties.getBaseUrl() + properties.getValidationPath();
     }
 
+    // Rút message lỗi từ response Product để trả về FE dễ hiểu hơn.
     private String extractMessage(String body, String fallback) {
         if (body == null || body.isBlank()) {
             return fallback;

@@ -20,6 +20,7 @@ public class OrderNotificationPublisher {
         this.rabbitTemplate = rabbitTemplate;
     }
 
+    // Phát event order.* cho Notification Service để gửi email/thông báo cho khách.
     public void publish(Order order, String eventType, String message) {
         OrderNotificationEvent event = new OrderNotificationEvent(
                 order.getId(), order.getUserId(), order.getBuyerEmail(), eventType,

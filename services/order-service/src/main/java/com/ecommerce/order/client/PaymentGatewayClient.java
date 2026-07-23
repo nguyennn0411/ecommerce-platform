@@ -28,6 +28,7 @@ public class PaymentGatewayClient {
         this.properties = properties;
     }
 
+    // Gửi thông tin đơn sang Payment Service để tạo giao dịch PayOS và nhận checkoutUrl.
     public PaymentCreateResponse createPayment(PaymentCreateRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -58,11 +59,13 @@ public class PaymentGatewayClient {
         }
     }
 
+    // Ghép base URL Payment và path tạo PayOS từ application.yml.
     private String buildCreateUrl() {
         // Ghép base URL Payment với path tạo PayOS.
         return properties.getBaseUrl() + properties.getCreatePayosPath();
     }
 
+    // Lấy message lỗi từ JSON wrapper Payment trả về.
     private String extractMessage(JsonNode root, String fallback) {
         if (root != null) {
             JsonNode message = root.get("message");
@@ -73,6 +76,7 @@ public class PaymentGatewayClient {
         return fallback;
     }
 
+    // Parse body lỗi dạng chuỗi rồi lấy message để Order hiển thị nguyên nhân rõ hơn.
     private String extractMessage(String body, String fallback) {
         if (body == null || body.isBlank()) {
             return fallback;
